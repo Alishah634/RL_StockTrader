@@ -1,0 +1,53 @@
+2024-11-01 03:12:24,032 - root - load_csv - INFO - Loaded CSV from data/raw/yahoo_data.csv, Now processing...
+2024-11-01 03:12:24,033 - root - load_csv - INFO - Selected columns for processing: ['Date', 'Open', 'High', 'Low', 'Close', 'Adj_Close', 'Volume']
+2024-11-01 03:12:24,040 - root - dataset - INFO - Dataset has been set successfully.
+2024-11-01 03:12:24,041 - root - load_csv - INFO - CSV data successfully loaded and preprocessed.
+2024-11-01 03:12:24,060 - env.portfolio_class - __init__ - INFO - Portfolio initialized with Owner: John, balance 1000.0, and current stocks: []
+2024-11-01 03:18:05,752 - root - load_csv - INFO - Loaded CSV from data/raw/yahoo_data.csv, Now processing...
+2024-11-01 03:18:05,759 - root - load_csv - INFO - Selected columns for processing: ['Date', 'Open', 'High', 'Low', 'Close', 'Adj_Close', 'Volume']
+2024-11-01 03:18:05,780 - root - dataset - INFO - Dataset has been set successfully.
+2024-11-01 03:18:05,782 - root - load_csv - INFO - CSV data successfully loaded and preprocessed.
+2024-11-01 03:18:05,843 - env.portfolio_class - __init__ - INFO - Portfolio initialized with Owner: John, balance 1000.0, and current stocks: []
+2024-11-01 03:30:12,415 - root - train - DEBUG - Training started...
+2024-11-01 03:30:12,415 - root - train - DEBUG - All input parameters are valid. Proceeding with training...
+2024-11-01 03:30:12,425 - root - load_csv - INFO - Loaded CSV from data/raw/yahoo_data.csv, Now processing...
+2024-11-01 03:30:12,426 - root - load_csv - DEBUG - Modified column names: ['Date', 'Open', 'High', 'Low', 'Close', 'Adj_Close', 'Volume']
+2024-11-01 03:30:12,427 - root - load_csv - INFO - Selected columns for processing: ['Date', 'Open', 'High', 'Low', 'Close', 'Adj_Close', 'Volume']
+2024-11-01 03:30:12,436 - root - load_csv - DEBUG -  # of rows before dropping NA: 1259 and after: 1258 i.e rows dropped: 1
+2024-11-01 03:30:12,436 - root - dataset - INFO - Dataset has been set successfully.
+2024-11-01 03:30:12,437 - root - load_csv - INFO - CSV data successfully loaded and preprocessed.
+2024-11-01 03:30:12,442 - root - log_csv_head - DEBUG - 
+First few rows of the dataset:
+        Date      Open      High       Low     Close  Adj_Close       Volume
+0 2023-04-28  33797.43  34104.56  33728.40  34098.16   34098.16  354310000.0
+1 2023-04-27  33381.66  33859.75  33374.65  33826.16   33826.16  343240000.0
+2 2023-04-26  33596.34  33645.83  33235.85  33301.87   33301.87  321170000.0
+3 2023-04-25  33828.34  33875.49  33525.39  33530.83   33530.83  297880000.0
+4 2023-04-24  33805.04  33891.15  33726.09  33875.40   33875.40  252020000.0
+
+2024-11-01 03:30:12,443 - root - log_dataset_metrics - DEBUG - 
+Dataset Metrics:
+Number of rows and colums: (1258, 7)
+Data Types:
+Date         datetime64[ns]
+Open                float64
+High                float64
+Low                 float64
+Close               float64
+Adj_Close           float64
+Volume              float64
+dtype: object
+
+2024-11-01 03:30:12,455 - root - log_dataset_metrics - DEBUG - 
+Summary Statistics:
+                                Date          Open          High           Low         Close     Adj_Close        Volume
+count                           1258   1258.000000   1258.000000   1258.000000   1258.000000   1258.000000  1.258000e+03
+mean   2020-10-28 09:39:12.305246464  29595.823045  29776.945739  29402.432226  29599.361677  29599.361677  3.450636e+08
+min              2018-05-01 00:00:00  19028.360000  19121.010000  18213.650000  18591.930000  18591.930000  8.615000e+07
+25%              2019-07-31 06:00:00  26041.267500  26163.155000  25877.872500  26027.120000  26027.120000  2.773125e+08
+50%              2020-10-27 12:00:00  29201.410000  29335.685000  28996.500000  29199.460000  29199.460000  3.247250e+08
+75%              2022-01-26 18:00:00  33604.027500  33825.445000  33346.827500  33600.342500  33600.342500  3.875100e+08
+max              2023-04-28 00:00:00  36722.600000  36952.650000  36636.000000  36799.650000  36799.650000  9.159900e+08
+std                              NaN   4006.078299   4009.007573   4004.949066   4007.468822   4007.468822  1.069142e+08
+2024-11-01 03:30:12,456 - root - train - DEBUG - CSV data successfully loaded and preprocessed.
+2024-11-01 03:30:12,458 - env.portfolio_class - __init__ - INFO - Portfolio initialized with Owner: John, balance 1000.0, and current stocks: []

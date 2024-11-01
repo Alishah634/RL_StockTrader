@@ -1,0 +1,93 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Logs and databases
+logs/
+*.log
+
+# Environment variables
+.env
+
+# Virtual environment
+venv/
+.env/
+*.env
+
+# Data and databases
+data/processed/
+# Not!!! Excluding default raw data file from version control:
+# data/raw/yahoo_data.csv  
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# VS Code settings
+.vscode/
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Django stuff:
+*.sqlite3
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Unit test / coverage reports
+.coverage
+.tox/
+.nox/
+*.cover
+coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.coveragerc
+*.codecov
+
+# pyenv
+.python-version
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Cython debug symbols
+cython_debug/
+
+# Pytest
+.pytest_cache/
+
+# IDEs and editors
+.idea/
+*.swp
+*~
+
+# MacOS
+.DS_Store
