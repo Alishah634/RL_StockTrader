@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 *.py[cod]
 *$py.class
+rl/
 
 # Log files
 logs/
