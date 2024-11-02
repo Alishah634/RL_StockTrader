@@ -25,6 +25,7 @@ This project aims to build a Reinforcement Learning (RL) framework for trading s
 - Need to add, action states outcomes/func calls to portfolio
 - Need to set up Market Env, and the Stock class
 - Save model setting, load model setting needs to be added, most likely to DataProcessor Class (in `data/data_loader.py`)
+
    - Might need to add optimizer for hyper parameters (skorch, bayseian optimization and adam are current known options)
 
 - Need to add reward, biasing Neural Nets. (DRQN Research required.)
@@ -35,4 +36,16 @@ This project aims to build a Reinforcement Learning (RL) framework for trading s
 - (Optional) Stretch goal add graphical interface can see the trades over time, live analysis.
 
 # Implementation Ideas:
-- Could use yfinance to auto download large amounts of financial data for either training, evaluation, simulate, and backtesting functions. 
+
+- Could use yfinance to auto download large amounts of financial data for either training, evaluation, simulate, and backtesting functions.
+
+# Example Usage: 
+Note main.py acts as settings script allowing the user to select what they would like to use this framework for.
+
+## Example Usage for training the proposed RL model:
+ python3 main.py  --clear-logs 
+ python3 main.py  -t train --log-level=INFO 
+
+## Example Usage for evaluating the pre-trained, proposed model:
+ python3 main.py  --clear-logs 
+ python3 main.py  -t evaluate --log-level=INFO 
