@@ -10,9 +10,6 @@ from scripts.evaluate import evaluate
 from scripts.simulate import simulate
 from argparse import ArgumentParser
 
-
-
-
 def parse_arguments():
     """Parse command-line arguments for configuring the RL Stock Trader."""
     parser = ArgumentParser(

@@ -31,9 +31,9 @@ def ensure_directory(path: str) -> None:
         raise ValueError("The path must be a string.")
     if not os.path.exists(path):
         os.makedirs(path)
-        cprint(f"Directory created at: {path}", "green")
+        logging.debug(f"Directory created at: {path}", "green")
     else:
-        cprint(f"Directory already exists at: {path}", "yellow")
+        logging.debug(f"Directory already exists at: {path}", "yellow")
     return
 
 def time_decorator(func):
@@ -48,7 +48,7 @@ def time_decorator(func):
         return result
     return wrapper
 
-def interactive_countdown(seconds=60, message="You want to clear all the log files? ? (Type 'yes' to confirm or 'q' to quit, then press ENTER)"):
+def interactive_countdown(seconds: int =60, message : str ="You want to clear all the log files? ? (Type 'yes' to confirm or 'q' to quit, then press ENTER)"):
     """Decorator to pause and allow interactive input during a countdown before executing a function."""
     def decorator(func):
         @functools.wraps(func)
@@ -149,7 +149,7 @@ def setup_logging(log_level=logging.INFO):
 
     cprint("Colored logging setup complete.", "green")
 
-def setup_file_logger(name: str, log_file: str, log_level=logging.DEBUG, will_propogate = False):
+def setup_file_logger(name: str, log_file: str, log_level=logging.DEBUG, will_propogate: bool = False):
     """Sets up a dedicated file logger for a specific class or module."""
     logger = logging.getLogger(name)
     logger.setLevel(log_level)

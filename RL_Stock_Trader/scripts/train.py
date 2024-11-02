@@ -27,7 +27,6 @@ def train(episodes: int = RL_SETTINGS["episodes"], learning_rate: float = RL_SET
         preprocessor.log_csv_head()
         preprocessor.log_dataset_metrics()
         logging.debug("CSV data successfully loaded and preprocessed.")
-        # logging.info("CSV data successfully loaded and preprocessed")
         # cprint("Data successfully preprocessed.", "green")
     except Exception as e:
         logging.error(f"Failed to load or preprocess CSV data: {e}")

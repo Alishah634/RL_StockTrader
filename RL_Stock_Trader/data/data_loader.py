@@ -5,11 +5,12 @@ import pandas as pd
 from config.logging_config import logging, setup_logging, setup_file_logger
 
 class DataPreprocessor:
-    def __init__(self, default_raw_csv_folder: str = "data/raw/", default_csv_name='yahoo_data.csv'):
+    def __init__(self, default_raw_csv_folder: str = "data/raw/", default_csv_name: str ='yahoo_data.csv'):
         self.default_raw_csv_folder = default_raw_csv_folder
         self.default_csv_path = os.path.join(self.default_raw_csv_folder, default_csv_name)
         self.default_required_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Adj_Close', 'Volume']
-        self._dataset = None  # Private attribute for dataset
+        # Private attributes for dataset:
+        self._dataset = None  
 
     @property
     def dataset(self) -> pd.DataFrame:
@@ -40,8 +41,6 @@ class DataPreprocessor:
         Returns:
             pd.DataFrame: Preprocessed DataFrame with columns specified by required_columns if present.
         """
-        
-        
         path = csv_path if csv_path else self.default_csv_path
         required_columns = required_columns if required_columns else self.default_required_columns
         
@@ -113,3 +112,4 @@ class DataPreprocessor:
             logging.debug("\nSummary Statistics:\n" + str(self.dataset.describe()))
         else:
             logging.warning("No dataset available. Please load a CSV first.")
+        return
