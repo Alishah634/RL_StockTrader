@@ -25,7 +25,14 @@ class Portfolio:
         # Could do this instead: but does not adhere to production code standard: (name.strip() and name.replace(' ', '_').rstrip('_').lstrip('_'))
         self.name = name.replace(' ', '_').rstrip('_').lstrip('_') if name.strip() else name
         self.balance = initial_balance
-        self.stocks: List[Stocks] = []  
+        self.stocks: List[Stocks] = []
+
+        # Tracking Attributes:
+        # Shares held, bought, sold:
+        self.holdings = 0 
+        self.total_shares_bought = 0
+        self.total_shares_sold = 0
+          
         # self.load_stocks_from_csv(csv_file)
         self.portfolio_logger.info(f"Portfolio initialized with Owner: {self.name}, balance {self.balance}, and current stocks: {self.stocks}")
         
@@ -51,15 +58,45 @@ class Portfolio:
         except ValueError as e:
             self.portfolio_logger.error(f"Data conversion error: {e}")  # Error level log
 
+    # def add_stock(self, stock: Stocks):
+    #     """ Add a stock to the portfolio if there's enough balance. """
+    #     total_cost = stock.buy_price * stock.volume
+    #     if total_cost <= self.balance:
+    #         self.stocks.append(stock)
+    #         self.balance -= total_cost
+    #         self.portfolio_logger.info(f"Added {stock} to the portfolio.")  # Info level log
+    #     else:
+    #         self.portfolio_logger.warning("Insufficient balance to add this stock.")  # Warning level log
+
     def add_stock(self, stock: Stocks):
-        """ Add a stock to the portfolio if there's enough balance. """
+        """Add a stock to the portfolio if there's enough balance."""
         total_cost = stock.buy_price * stock.volume
         if total_cost <= self.balance:
             self.stocks.append(stock)
             self.balance -= total_cost
-            self.portfolio_logger.info(f"Added {stock} to the portfolio.")  # Info level log
+            self.holdings += stock.volume
+            self.total_shares_bought += stock.volume  # Update total shares bought
+            # Logging for successful stock addition
+            self.portfolio_logger.info(f"Added stock to the portfolio")
         else:
-            self.portfolio_logger.warning("Insufficient balance to add this stock.")  # Warning level log
+            # Logging for insufficient balance
+            self.portfolio_logger.warning(f"Insufficient balance to add this stock")
+    
+    def sell_stock(self, stock: Stocks, volume: int):
+        """Sell a stock from the portfolio."""
+        if stock in self.stocks and volume <= self.holdings:
+            self.balance += stock.sell_price * volume
+            self.holdings -= volume
+            self.total_shares_sold += volume  # Update total shares sold
+            
+            # Update the volume of the stock being sold
+            stock.volume -= volume
+            if stock.volume <= 0:
+                self.stocks.remove(stock)
+            
+            self.portfolio_logger.info(f"Sold {volume} shares of {stock} from the portfolio.")
+        else:
+            self.portfolio_logger.warning(f"Stock not found or invalid volume.")
 
     def __repr__(self):
         return f"Portfolio(Owner: {self.name}, Balance: {self.balance}, Stocks: {self.stocks})"
