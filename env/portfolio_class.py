@@ -32,7 +32,10 @@ class Portfolio:
         self.holdings = 0 
         self.total_shares_bought = 0
         self.total_shares_sold = 0
-          
+        # Initialize portfolio_value to the initial balance
+        self.portfolio_value = self.balance  # Initially, portfolio value is just the cash balance.
+        self.net_profit = 0  # Initial net profit is 0.
+        
         # self.load_stocks_from_csv(csv_file)
         self.portfolio_logger.info(f"Portfolio initialized with Owner: {self.name}, balance {self.balance}, and current stocks: {self.stocks}")
         
