@@ -1,5 +1,5 @@
 # Market environment setup
-from config.logging_config import setup_logging, setup_file_logger
+from config.logging_config import logging, setup_logging, setup_file_logger
 from config.rl_config import RL_SETTINGS
 from env.action_space import ActionSpace
 
@@ -19,8 +19,11 @@ class MarketEnvironment(gym.Env):
         super(MarketEnvironment, self).__init__()
         
         # Create a logger for this class specifically(will NOT propogate to root logger):
-        self.market_env_logging = setup_file_logger(__name__, 'logs/market_environment.log', will_propogate=False)
-        
+        self.market_env_logging = setup_file_logger("env.market_environment", 'logs/market_environment.log', will_propogate=True)
+        self.market_env_logging = logging.getLogger("env.market_environment")
+        self.market_env_logging.setLevel(logging.WARNING)  
+
+        # MarketEnvironment initialization
         # Validate that required columns are in the dataset
         required_columns = {'Open', 'High', 'Low', 'Close', 'Adj_Close', 'Volume'}
         if not required_columns.issubset(data.columns):
@@ -55,30 +58,31 @@ class MarketEnvironment(gym.Env):
         self.current_price = self.data.iloc[self.current_step]['Close']
         return obs
     
+    # MarketEnvironment step function
     def step(self, action, shares=0):
         """Execute a trade action and calculate the next state."""
         if action == 1:  # Buy
+            # Adjust shares if necessary to fit within the balance
+            max_affordable_shares = self.portfolio.balance // self.current_price
+            shares = min(shares, max_affordable_shares)
             if shares > 0 and shares * self.current_price <= self.portfolio.balance:
                 self.portfolio.balance -= shares * self.current_price
                 self.portfolio.holdings += shares
                 self.portfolio.total_shares_bought += shares
             else:
+                print("Attempting to log a warning for insufficient balance for buying")  # Temporary diagnostic
                 self.market_env_logging.warning("Invalid number of shares or insufficient balance for buying.")
 
         elif action == 2:  # Sell
-            if shares > 0 and shares <= self.portfolio.holdings:
+            if shares > 0 and shares*self.current_price <= self.portfolio.balance:
                 self.portfolio.balance += shares * self.current_price
                 self.portfolio.holdings -= shares
                 self.portfolio.total_shares_sold += shares
-
-                # Remove stocks from the portfolio if all shares are sold
-                if self.portfolio.holdings == 0:
-                    self.portfolio.stocks.clear()  # This simulates clearing out stocks after full sale
-
             else:
+                print("Attempting to log a warning for insufficient holdings for selling")  # Temporary diagnostic
                 self.market_env_logging.warning("Invalid number of shares or insufficient holdings for selling.")
 
-        # Calculate portfolio value
+        # Calculate portfolio value and net profit
         self.portfolio.portfolio_value = self.portfolio.balance + (self.portfolio.holdings * self.current_price)
         self.portfolio.net_profit = self.portfolio.portfolio_value - self.initial_balance
 
@@ -93,6 +97,8 @@ class MarketEnvironment(gym.Env):
         next_obs = self._next_observation() if not done else None
 
         return next_obs, reward, done, {}
+
+
 
 
 
