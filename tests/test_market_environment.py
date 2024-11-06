@@ -37,45 +37,118 @@ def portfolio():
 def stock():
     return Stocks(buy_price=100.0, sell_price=110.0, volume=5, adjusted_close=105.0)
 
-def test_environment_steps(setup_environment):
+def test_environment_initial_state(setup_environment):
+    """Test the initial state of the environment."""
+    env = setup_environment
+    initial_state = env.reset()
+    assert initial_state is not None, "Initial state should not be None"
+    assert len(initial_state) == 6, "Initial state should have 6 features"
+
+def test_environment_step_logic(setup_environment):
+    """Test the step logic in the environment."""
+    env = setup_environment
+    env.reset()
+    state, reward, done, _ = env.step(1)  # Simulate a 'buy' action
+    assert not done, "Environment should not be done after one step"
+    assert isinstance(reward, (int, float)), "Reward should be a numeric type"
+    assert state is not None, "Next state should not be None"
+    assert len(state) == 6, "State should have 6 features"
+
+def test_environment_end_state(setup_environment):
+    """Test the end state when the environment reaches the last step."""
+    env = setup_environment
+    env.reset()
+    done = False
+    while not done:
+        _, _, done, _ = env.step(1)  # Continue stepping until the end
+    assert done, "Environment should reach done state after all steps are completed"
+
+def test_portfolio_initialization(portfolio):
+    """Test the initialization of the Portfolio class."""
+    assert portfolio.balance == 1000.0, "Initial balance should match the input value"
+    assert portfolio.holdings == 0, "Initial holdings should be zero"
+    assert portfolio.total_shares_bought == 0, "Initial shares bought should be zero"
+    assert portfolio.total_shares_sold == 0, "Initial shares sold should be zero"
+
+def test_add_stock_updates_tracking(portfolio, stock):
+    """Test that adding a stock updates portfolio tracking variables."""
+    initial_balance = portfolio.balance
+    portfolio.add_stock(stock)
+    assert portfolio.total_shares_bought == stock.volume, "Total shares bought should match the stock volume"
+    assert portfolio.balance == initial_balance - (stock.buy_price * stock.volume), "Balance should update correctly"
+
+def test_sell_stock_updates_tracking(portfolio, stock):
+    # Add stock to the portfolio
+    portfolio.add_stock(stock)
+    initial_balance = portfolio.balance
+    initial_holdings = portfolio.holdings
+    sell_volume = stock.volume // 2  # Sell half the volume
+
+    # Sell part of the stock
+    portfolio.sell_stock(stock, sell_volume)
+
+    # Check if portfolio holdings and stock volume are updated correctly
+    assert portfolio.total_shares_sold == sell_volume, "Total shares sold should be updated"
+    assert portfolio.holdings == initial_holdings - sell_volume, "Holdings should update correctly after sale"
+    assert portfolio.balance == initial_balance + (stock.sell_price * sell_volume), "Balance should update correctly after sale"
+
+    # Sell the remaining stock
+    portfolio.sell_stock(stock, stock.volume)
+
+    # Check if the stock is removed from the portfolio and holdings are updated
+    assert stock not in portfolio.stocks, "Stock should be removed if all shares are sold"
+    assert portfolio.holdings == 0, "Holdings should be zero after all shares are sold"
+
+def test_portfolio_add_stock_insufficient_balance(portfolio, stock):
+    """Test adding a stock when the balance is insufficient."""
+    stock.buy_price = 1000.0  # Make the stock too expensive
+    portfolio.add_stock(stock)
+    assert len(portfolio.stocks) == 0, "Portfolio should not add a stock if the balance is insufficient"
+    assert portfolio.balance == 1000.0, "Balance should remain the same if the stock was not added"
+
+def test_portfolio_sell_stock_invalid_volume(portfolio, stock):
+    """Test selling an invalid volume of stock."""
+    portfolio.add_stock(stock)
+    initial_holdings = portfolio.holdings
+    initial_balance = portfolio.balance
+    portfolio.sell_stock(stock, stock.volume + 1)  # Attempt to sell more than owned
+    assert portfolio.holdings == initial_holdings, "Holdings should not change with invalid volume"
+    assert portfolio.balance == initial_balance, "Balance should not change with invalid volume"
+
+def test_stock_class_representation(stock):
+    """Test the string representation of the Stocks class."""
+    repr_str = repr(stock)
+    expected_str = "Stocks(Buy Price: 100.0, Sell Price: 110.0, Volume: 5, Adjusted Close: 105.0)"
+    assert repr_str == expected_str, "String representation of Stocks class should match the expected format"
+
+def test_environment_step_with_shares(setup_environment):
     env = setup_environment
     state = env.reset()
     done = False
-    actions = ['Hold', 'Buy', 'Sell']
-    
-    while not done:
-        action = env.action_space.sample()  # Random action for testing
-        next_state, reward, done, _ = env.step(action)
-        
-        # Assertions to check environment behavior
-        if not done:
-            assert next_state is not None, "Next state should not be None"
-        assert isinstance(reward, (int, float)), "Reward should be a numeric type"
-        
-        # Print action and state for manual verification (optional)
-        print(f"Action taken: {actions[action]}")
-        print(f"Reward: {reward}")
-        print(f"Next State: {next_state}\n")
-    
-    assert done, "Environment should reach done state after last step"
 
+    # Test buying specific shares
+    action = 1  # Buy
+    shares_to_buy = 5
+    next_state, reward, done, _ = env.step(action, shares_to_buy)
 
-def test_initialization(setup_environment):
+    assert env.portfolio.holdings == shares_to_buy, "Holdings should match the number of shares bought."
+    assert env.portfolio.balance < env.initial_balance, "Balance should decrease after buying."
+
+def test_environment_step_with_variable_shares(setup_environment):
     env = setup_environment
-    assert env is not None, "Environment should be initialized"
+    state = env.reset()
+    done = False
 
-def test_add_stock_updates_tracking(portfolio, stock):
-    initial_balance = portfolio.balance
-    portfolio.add_stock(stock)
-    assert portfolio.total_shares_bought == stock.volume
-    assert portfolio.balance == initial_balance - (stock.buy_price * stock.volume)
+    # Test buying specific shares
+    action = 1  # Buy
+    shares_to_buy = 5
+    next_state, reward, done, _ = env.step(action, shares_to_buy)
+    assert env.portfolio.holdings == shares_to_buy, "Holdings should match the number of shares bought."
+    assert env.portfolio.balance < env.initial_balance, "Balance should decrease after buying."
 
-def test_sell_stock_updates_tracking(portfolio, stock):
-    portfolio.add_stock(stock)
-    initial_balance = portfolio.balance
-    sell_volume = stock.volume // 2
-    portfolio.sell_stock(stock, sell_volume)
-    assert portfolio.total_shares_sold == sell_volume
-    assert portfolio.holdings == stock.volume  
-    assert portfolio.balance == initial_balance + (stock.sell_price * sell_volume)
-
+    # Test selling specific shares
+    action = 2  # Sell
+    shares_to_sell = 3
+    next_state, reward, done, _ = env.step(action, shares_to_sell)
+    assert env.portfolio.holdings == 2, "Holdings should be updated correctly after sale."
+    assert env.portfolio.balance > 0, "Balance should increase after selling shares."

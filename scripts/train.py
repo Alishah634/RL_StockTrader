@@ -40,7 +40,37 @@ def train(episodes: int = RL_SETTINGS["episodes"], learning_rate: float = RL_SET
     # Initialize the RL agent (replace `DQNAgent` with your specific RL agent class)
     # agent = DQNAgent(state_size=env.observation_space.shape[0], action_size=env.action_space.n, learning_rate=learning_rate)
 
-    # Training loop
+    # Training loop:
+    
+    # Training loop (placeholder code), where the agent when buying as much as needed:    
+    # Assuming agent's action now returns a tuple (action_type, shares_to_buy):
+    '''
+    
+    # Assuming agent's action now returns a tuple (action_type, shares)
+    for episode in range(episodes):
+        state = env.reset()
+        done = False
+        cumulative_reward = 0
+
+        while not done:
+            # Let the agent choose the action and number of shares to buy/sell
+            action, shares = agent.select_action(state)
+
+            # Pass both action and shares to the step method
+            next_state, reward, done, _ = env.step(action, shares)
+
+            # Store the experience and train the agent
+            agent.store_experience(state, action, reward, next_state, done)
+            agent.learn(batch_size)
+
+            cumulative_reward += reward
+            state = next_state
+
+        print(f"Episode {episode} - Total Reward: {cumulative_reward}")
+
+    '''
+    
+    # Training loop (placeholder code), where the agent when buying buys as much as possible:    
     for episode in range(episodes):
         logging.debug(f"Starting episode {episode + 1}/{episodes}")
         state = env.reset()  # Reset the environment and get the initial state

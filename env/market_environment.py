@@ -55,20 +55,28 @@ class MarketEnvironment(gym.Env):
         self.current_price = self.data.iloc[self.current_step]['Close']
         return obs
     
-    def step(self, action):
+    def step(self, action, shares=0):
         """Execute a trade action and calculate the next state."""
         if action == 1:  # Buy
-            shares_to_buy = self.portfolio.balance // self.current_price
-            if shares_to_buy > 0:
-                self.portfolio.balance -= shares_to_buy * self.current_price
-                self.portfolio.holdings += shares_to_buy
-                self.portfolio.total_shares_bought += shares_to_buy
+            if shares > 0 and shares * self.current_price <= self.portfolio.balance:
+                self.portfolio.balance -= shares * self.current_price
+                self.portfolio.holdings += shares
+                self.portfolio.total_shares_bought += shares
+            else:
+                self.market_env_logging.warning("Invalid number of shares or insufficient balance for buying.")
 
         elif action == 2:  # Sell
-            if self.portfolio.holdings > 0:
-                self.portfolio.balance += self.portfolio.holdings * self.current_price
-                self.portfolio.total_shares_sold += self.portfolio.holdings
-                self.portfolio.holdings = 0
+            if shares > 0 and shares <= self.portfolio.holdings:
+                self.portfolio.balance += shares * self.current_price
+                self.portfolio.holdings -= shares
+                self.portfolio.total_shares_sold += shares
+
+                # Remove stocks from the portfolio if all shares are sold
+                if self.portfolio.holdings == 0:
+                    self.portfolio.stocks.clear()  # This simulates clearing out stocks after full sale
+
+            else:
+                self.market_env_logging.warning("Invalid number of shares or insufficient holdings for selling.")
 
         # Calculate portfolio value
         self.portfolio.portfolio_value = self.portfolio.balance + (self.portfolio.holdings * self.current_price)
@@ -76,9 +84,7 @@ class MarketEnvironment(gym.Env):
 
         # Reward: Change in portfolio value
         reward = float(self.portfolio.net_profit)
-        
-        # reward = self.portfolio.portfolio_value - self.initial_balance
-        
+
         # Move to the next time step
         self.current_step += 1
         done = self.current_step >= len(self.data) - 1  # Check if at the end of data
@@ -87,6 +93,8 @@ class MarketEnvironment(gym.Env):
         next_obs = self._next_observation() if not done else None
 
         return next_obs, reward, done, {}
+
+
 
     def render(self, mode='human', close=False):
         """Render the environment's current state."""
