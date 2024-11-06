@@ -82,21 +82,41 @@ class Portfolio:
             # Logging for insufficient balance
             self.portfolio_logger.warning(f"Insufficient balance to add this stock")
     
+    # def sell_stock(self, stock: Stocks, volume: int):
+    #     """Sell a stock from the portfolio."""
+    #     if stock in self.stocks and volume <= self.holdings:
+    #         self.balance += stock.sell_price * volume
+    #         self.holdings -= volume
+    #         self.total_shares_sold += volume  # Update total shares sold
+            
+    #         # Update the volume of the stock being sold
+    #         stock.volume -= volume
+    #         if stock.volume <= 0:
+    #             self.stocks.remove(stock)
+            
+    #         self.portfolio_logger.info(f"Sold {volume} shares of {stock} from the portfolio.")
+    #     else:
+    #         self.portfolio_logger.warning(f"Stock not found or invalid volume.")
+
     def sell_stock(self, stock: Stocks, volume: int):
         """Sell a stock from the portfolio."""
-        if stock in self.stocks and volume <= self.holdings:
+        if stock in self.stocks and volume <= stock.volume:
             self.balance += stock.sell_price * volume
-            self.holdings -= volume
-            self.total_shares_sold += volume  # Update total shares sold
-            
-            # Update the volume of the stock being sold
             stock.volume -= volume
+            self.total_shares_sold += volume  # Update total shares sold
+
+            # Remove the stock if all shares are sold
             if stock.volume <= 0:
                 self.stocks.remove(stock)
-            
+
+            # Recalculate holdings to reflect the total shares across all stocks
+            self.holdings = sum(s.volume for s in self.stocks)
+
             self.portfolio_logger.info(f"Sold {volume} shares of {stock} from the portfolio.")
         else:
             self.portfolio_logger.warning(f"Stock not found or invalid volume.")
+
+
 
     def __repr__(self):
         return f"Portfolio(Owner: {self.name}, Balance: {self.balance}, Stocks: {self.stocks})"
