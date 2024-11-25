@@ -25,10 +25,14 @@ def setup_environment():
     # Initialize the portfolio
     portfolio = Portfolio(name='TestPortfolio', initial_balance=1000.0)
 
+    # Log portfolio initialization
+    print(f"Initializing Portfolio with balance: {portfolio.balance}")
+    
     # Initialize the environment
     env = MarketEnvironment(data=data, portfolio=portfolio)
 
     return env
+
 
 @pytest.fixture
 def portfolio():
@@ -161,15 +165,19 @@ def test_warning_for_insufficient_balance(setup_environment, caplog):
     action = 1  # Buy action
     shares_to_buy = 1000  # Excessively high to trigger a warning
 
-    with caplog.at_level(logging.WARNING, logger="env.market_environment"):
+    # Use correct logger name
+    with caplog.at_level(logging.WARNING, logger="market_environment"):
         env.step(action, shares_to_buy)
 
-    # Print captured log messages for debugging
+    # Debugging log messages for verification
+    if not caplog.records:
+        print("No log records captured. Ensure the logging configuration is correct.")
     for record in caplog.records:
         print("Log level:", record.levelname)
         print("Log message:", record.message)
+    [print(record) for record in caplog.records] # DEBUG STATEMENT!!!
 
-    assert any("Invalid number of shares or insufficient balance for buying" in record.message 
+    assert any("Invalid number of shares or insufficient balance for buying." in record.message
                for record in caplog.records), \
         "A warning should be logged when attempting to buy more shares than the balance allows."
 
@@ -193,13 +201,14 @@ def test_warning_for_invalid_sell(setup_environment, caplog):
     action = 2  # Sell action
     shares_to_sell = 5  # Attempt to sell without any holdings
 
-    with caplog.at_level("WARNING", logger="env.market_environment"):
+    with caplog.at_level(logging.WARNING, logger="market_environment"):
         env.step(action, shares_to_sell)
 
     # Check that a warning was logged
-    assert any("Invalid number of shares or insufficient holdings for selling" in record.message for record in caplog.records), \
+    assert any("Invalid number of shares or insufficient holdings for selling" in record.message
+               for record in caplog.records), \
         "Warning should be raised when trying to sell more shares than the portfolio holds."
-
+        
 def test_no_warning_for_valid_sell_after_buy(setup_environment, caplog):
     env = setup_environment
     env.reset()
