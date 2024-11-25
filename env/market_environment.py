@@ -32,13 +32,13 @@ class MarketEnvironment(gym.Env):
     """A custom trading environment for Reinforcement Learning with stock market data."""
 
     metadata = {'render.modes': ['human']}
-    def __init__(self, data: pd.DataFrame, portfolio: Portfolio, initial_balance: float = 1000, render_mode = 'human'):
+    def __init__(self, data: pd.DataFrame, portfolio: Portfolio, initial_balance: float = 1000):
         super(MarketEnvironment, self).__init__()
         self.render_mode = 'human'  # Store the render mode
         
         # Create a logger specifically for the market environment
         self.market_env_logging = logging.getLogger(__name__)
-        setup_file_logger(__name__, f'{ROOT}/logs/market_environment.log', log_level=logging.INFO, will_propogate=True)
+        setup_file_logger(__name__, 'logs/market_environment.log', will_propogate=True)
 
         # Initialize attributes
         required_columns = {'Open', 'High', 'Low', 'Close', 'Adjusted_Close', 'Volume'}
@@ -69,20 +69,7 @@ class MarketEnvironment(gym.Env):
             low=-np.inf, high=np.inf, shape=(6,), dtype=np.float32
         )
 
-    # def reset(self):
-    #     """Reset the environment to an initial state."""
-    #     self.current_step = 0
-    #     self.portfolio.balance = self.initial_balance
-    #     self.portfolio.holdings = 0
-    #     self.portfolio.net_profit = 0
-
-    #     # Log reset state
-    #     self.market_env_logging.info(f"Environment Reset: Balance: {self.portfolio.balance}, Holdings: {self.portfolio.holdings}, Net Profit: {self.portfolio.net_profit}")
-
-    #     return self._next_observation()
-    
-    # @print_call_stack
-    def reset(self, seed=None, options=None):
+    def reset(self):
         """Reset the environment to an initial state."""
 
         # Log reset state
@@ -295,16 +282,9 @@ class MarketEnvironment(gym.Env):
 
     def render(self, render_mode='human', close=False):
         """Render the environment's current state."""
-        if self.render_mode == 'human':
-            print(f"Step: {self.current_step}, Current Price: {self.current_price}, "
-                f"Balance: {self.portfolio.balance}, Holdings: {self.portfolio.holdings} shares, "
-                f"Portfolio Value: {self.portfolio.portfolio_value}, Net Profit: {self.portfolio.net_profit}")
-        else:
-            raise ValueError(f"Unsupported render_mode: {self.render_mode}")
-
-        # self.market_env_logging.info(f"Step: {self.current_step}"+ \
-        #     f", Current Price: {self.current_price}"+ \
-        #     f", Balance: {self.portfolio.balance}"+ \
-        #     f", Holdings: {self.portfolio.holdings} shares"+ \
-        #     f", Portfolio Value: {self.portfolio.portfolio_value}"+ \
-        #     f", Net Profit: {self.portfolio.net_profit}")
+        self.market_env_logging.info(f"Step: {self.current_step}"+ \
+            f", Current Price: {self.current_price}"+ \
+            f", Balance: {self.portfolio.balance}"+ \
+            f", Holdings: {self.portfolio.holdings} shares"+ \
+            f", Portfolio Value: {self.portfolio.portfolio_value}"+ \
+            f", Net Profit: {self.portfolio.net_profit}")
