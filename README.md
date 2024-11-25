@@ -48,6 +48,9 @@ Note main.py acts as settings script allowing the user to select what they would
 python3 main.py --clear-logs
 python3 -m pytest tests/ --tb=short -v
 
+
+python3 main.py --clear-logs ; python3 -m pytest tests/ --tb=short -v
+
 ```
 
 ## Example Usage for training the proposed RL model:
