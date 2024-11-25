@@ -34,7 +34,7 @@ def train(episodes: int = RL_SETTINGS["episodes"], learning_rate: float = RL_SET
         return
 
     # Initialize portfolio:
-    portfolio = Portfolio('John', initial_balance=10000)
+    portfolio = Portfolio('John', initial_balance=1000)
     env = MarketEnvironment(data=processed_data, portfolio=portfolio)
     env.render()
     # Initialize the RL agent (replace `DQNAgent` with your specific RL agent class)
