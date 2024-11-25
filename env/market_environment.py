@@ -1,35 +1,88 @@
-# Market environment setup
-from config.logging_config import logging, setup_logging, setup_file_logger
-from config.rl_config import RL_SETTINGS
-from env.action_space import ActionSpace
-
 import gym
 from gym import spaces
 import numpy as np
 import pandas as pd
 from env.portfolio_class import Portfolio
+from config.logging_config import setup_file_logger
+import logging  # Standard library logging
 
 class MarketEnvironment(gym.Env):
     """A custom trading environment for Reinforcement Learning with stock market data."""
-    """Allows the agent to buy and sell stocks based on the current price, and rewards the agent based on the portfolio value."""
 
     metadata = {'render.modes': ['human']}
-    
     def __init__(self, data: pd.DataFrame, portfolio: Portfolio, initial_balance: float = 10000):
         super(MarketEnvironment, self).__init__()
-        
-        # Create a logger for this class specifically(will NOT propogate to root logger):
-        self.market_env_logging = setup_file_logger("env.market_environment", 'logs/market_environment.log', will_propogate=True)
-        self.market_env_logging = logging.getLogger("env.market_environment")
-        self.market_env_logging.setLevel(logging.WARNING)  
 
-        # MarketEnvironment initialization
-        # Validate that required columns are in the dataset
+        # Create a logger specifically for the market environment
+        self.market_env_logging = logging.getLogger(__name__)
+        setup_file_logger(__name__, 'logs/market_environment.log', will_propogate=True)
+        self.market_env_logging.setLevel(logging.WARNING)
+
+        # Initialize attributes
         required_columns = {'Open', 'High', 'Low', 'Close', 'Adj_Close', 'Volume'}
         if not required_columns.issubset(data.columns):
             raise ValueError(f"DataFrame must contain the following columns: {required_columns}")
+
+        self.data = data.reset_index(drop=True)
+        self.portfolio = portfolio
+        self.initial_balance = portfolio.initial_balance
+        self.current_step = 0
+        self.current_price = 0
+
+        # Log or print initial balance
+        self.market_env_logging.info(f"Initialized Market Environment with Portfolio Balance: {self.portfolio.balance} and Initial Balance: {self.initial_balance}")
+
+        # Define action space: 0 = hold, 1 = buy, 2 = sell
+        self.action_space = spaces.Discrete(3)
+
+        # Define observation space (Open, High, Low, Close, Adj_Close, Volume)
+        self.observation_space = spaces.Box(
+            low=-np.inf, high=np.inf, shape=(6,), dtype=np.float32
+        )
         
+        # Log initial balance
+        self.market_env_logging.info(f"Initialized Market Environment with Portfolio Balance: {self.portfolio.balance}")
+
+    '''
+    def __init__(self, data: pd.DataFrame, portfolio: Portfolio, initial_balance: float = 10000):
+    # def __init__(self, data: pd.DataFrame, portfolio: Portfolio, initial_balance: float):
+        super(MarketEnvironment, self).__init__()
+
+        # Create a logger specifically for the market environment
+        # self.market_env_logging = logging.getLogger("env.market_environment")
+        # self.market_env_logging = logging.getLogger(__name__)
+        # self.market_env_logging = setup_file_logger(__name__, 'logs/market_environment.log', will_propogate=False)
+        # self.market_env_logging.setLevel(logging.WARNING)
+        
+        
+        # SECOND ATTEMPT AT FIXING THE TEST
+        # Create a logger specifically for the market environment
+        self.market_env_logging = logging.getLogger(__name__)
+        # Set up file logger with level WARNING
+        setup_file_logger(__name__, 'logs/market_environment.log', will_propogate=True)
+        self.market_env_logging.setLevel(logging.WARNING)
+
+        # # Avoid duplicating handlers if they are already added (e.g., if logger exists globally)
+        # if not self.market_env_logging.hasHandlers():
+        #     # File handler for writing to a log file
+        #     file_handler = logging.FileHandler('logs/market_environment.log')
+        #     file_handler.setLevel(logging.WARNING)
+        #     file_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        #     file_handler.setFormatter(file_formatter)
+        #     self.market_env_logging.addHandler(file_handler)
+
+        #     # Stream handler for console output (useful for testing and capturing warnings in caplog)
+        #     stream_handler = logging.StreamHandler()
+        #     stream_handler.setLevel(logging.WARNING)
+        #     stream_formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+        #     stream_handler.setFormatter(stream_formatter)
+        #     self.market_env_logging.addHandler(stream_handler)
+
         # Initialize attributes
+        required_columns = {'Open', 'High', 'Low', 'Close', 'Adj_Close', 'Volume'}
+        if not required_columns.issubset(data.columns):
+            raise ValueError(f"DataFrame must contain the following columns: {required_columns}")
+
         self.data = data.reset_index(drop=True)
         self.portfolio = portfolio
         self.initial_balance = initial_balance
@@ -38,48 +91,57 @@ class MarketEnvironment(gym.Env):
 
         # Define action space: 0 = hold, 1 = buy, 2 = sell
         self.action_space = spaces.Discrete(3)
-        
+
         # Define observation space (Open, High, Low, Close, Adj_Close, Volume)
         self.observation_space = spaces.Box(
             low=-np.inf, high=np.inf, shape=(6,), dtype=np.float32
         )
-    
+    '''
     def reset(self):
         """Reset the environment to an initial state."""
         self.current_step = 0
         self.portfolio.balance = self.initial_balance
         self.portfolio.holdings = 0
         self.portfolio.net_profit = 0
+
+        # Log reset state
+        self.market_env_logging.info(f"Environment Reset: Balance: {self.portfolio.balance}, Holdings: {self.portfolio.holdings}, Net Profit: {self.portfolio.net_profit}")
+
         return self._next_observation()
-    
+
     def _next_observation(self):
         """Get the next state/observation."""
         obs = self.data.iloc[self.current_step][['Open', 'High', 'Low', 'Close', 'Adj_Close', 'Volume']].values
         self.current_price = self.data.iloc[self.current_step]['Close']
         return obs
-    
-    # MarketEnvironment step function
+
     def step(self, action, shares=0):
         """Execute a trade action and calculate the next state."""
         if action == 1:  # Buy
-            # Adjust shares if necessary to fit within the balance
             max_affordable_shares = self.portfolio.balance // self.current_price
-            shares = min(shares, max_affordable_shares)
+            # shares = min(shares, max_affordable_shares) # TODO This line lets the agent buy as much as possible!!!
+
+            # Debugging information to understand the current state of the transaction:
+            self.market_env_logging.debug(f"Attempting to buy shares: Requested = {shares}, Affordable = {max_affordable_shares}")
+            self.market_env_logging.debug(f"Current Balance: {self.portfolio.balance}, Current Price: {self.current_price}")
+
             if shares > 0 and shares * self.current_price <= self.portfolio.balance:
+                self.market_env_logging.info(f"Bought {shares} shares at price {self.current_price}")
                 self.portfolio.balance -= shares * self.current_price
                 self.portfolio.holdings += shares
                 self.portfolio.total_shares_bought += shares
             else:
-                print("Attempting to log a warning for insufficient balance for buying")  # Temporary diagnostic
+                # Proper warning for insufficient balance
                 self.market_env_logging.warning("Invalid number of shares or insufficient balance for buying.")
 
         elif action == 2:  # Sell
-            if shares > 0 and shares*self.current_price <= self.portfolio.balance:
+            if shares > 0 and shares <= self.portfolio.holdings:
+                self.market_env_logging.info(f"Attempting to sell shares: Requested = {shares}, Holdings = {self.portfolio.holdings}")
                 self.portfolio.balance += shares * self.current_price
                 self.portfolio.holdings -= shares
                 self.portfolio.total_shares_sold += shares
             else:
-                print("Attempting to log a warning for insufficient holdings for selling")  # Temporary diagnostic
+                # Proper warning for insufficient holdings
                 self.market_env_logging.warning("Invalid number of shares or insufficient holdings for selling.")
 
         # Calculate portfolio value and net profit
@@ -97,9 +159,6 @@ class MarketEnvironment(gym.Env):
         next_obs = self._next_observation() if not done else None
 
         return next_obs, reward, done, {}
-
-
-
 
 
     def render(self, mode='human', close=False):

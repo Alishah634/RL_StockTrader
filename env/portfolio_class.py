@@ -24,6 +24,7 @@ class Portfolio:
         
         # Could do this instead: but does not adhere to production code standard: (name.strip() and name.replace(' ', '_').rstrip('_').lstrip('_'))
         self.name = name.replace(' ', '_').rstrip('_').lstrip('_') if name.strip() else name
+        self.initial_balance = initial_balance # Store the initial balance
         self.balance = initial_balance
         self.stocks: List[Stocks] = []
 
