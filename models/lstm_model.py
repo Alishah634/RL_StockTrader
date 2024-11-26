@@ -8,8 +8,12 @@ import os
 from tqdm import tqdm
 from collections import deque
 <<<<<<< HEAD
+<<<<<<< HEAD
 import time
 
+=======
+import time
+>>>>>>> a9b0825 (lstm still best results added actual vs prediction prints)
 sys.path.append('../')
 from data.data_loader import DataPreprocessor  # Assuming DataPreprocessor is in data/data_loader.py
 import random
@@ -27,6 +31,7 @@ from data.data_loader import DataPreprocessor  # Assuming DataPreprocessor is in
 class LSTMPricePredictor(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, num_layers=2):
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         """
         LSTM model for predicting next `Open` and `Close` prices.
@@ -38,6 +43,8 @@ class LSTMPricePredictor(nn.Module):
             num_layers (int): Number of LSTM layers.
         """
 >>>>>>> d3da7a3 (Tried many models, lstm model works best so far, not perfect but close)
+=======
+>>>>>>> a9b0825 (lstm still best results added actual vs prediction prints)
         super(LSTMPricePredictor, self).__init__()
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
@@ -70,6 +77,7 @@ class LSTMPricePredictor(nn.Module):
         self.fc = nn.Linear(hidden_dim, output_dim)
 
     def forward(self, x):
+<<<<<<< HEAD
         """
         Forward pass of the LSTM.
 
@@ -80,6 +88,8 @@ class LSTMPricePredictor(nn.Module):
             output (Tensor): Predicted values for the next `Open` and `Close` prices.
         """
 >>>>>>> d3da7a3 (Tried many models, lstm model works best so far, not perfect but close)
+=======
+>>>>>>> a9b0825 (lstm still best results added actual vs prediction prints)
         # Initialize LSTM hidden and cell states
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).to(x.device)
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).to(x.device)
@@ -121,7 +131,21 @@ def train_lstm(csv_paths, lstm_model, optimizer, criterion, num_epochs=50, batch
 
 
 def train_lstm(csv_paths, lstm_model, optimizer, criterion, num_epochs=50, batch_size=32, sequence_length=10):
+<<<<<<< HEAD
 >>>>>>> d3da7a3 (Tried many models, lstm model works best so far, not perfect but close)
+=======
+    model_path = 'saved_models/lstm_model.pth'
+
+    # Check if model has already been trained
+    if os.path.exists(model_path):
+        try:
+            lstm_model.load_state_dict(torch.load(model_path))
+            print("Model already trained. Loaded the trained model.")
+            return
+        except Exception as e:
+            print(f"Error loading model. Proceeding with training: {e}")
+
+>>>>>>> a9b0825 (lstm still best results added actual vs prediction prints)
     replay_buffer = deque(maxlen=10000)
     preprocessor = DataPreprocessor()
 
@@ -186,6 +210,7 @@ def train_lstm(csv_paths, lstm_model, optimizer, criterion, num_epochs=50, batch
 
     # Save the trained LSTM model
 <<<<<<< HEAD
+<<<<<<< HEAD
     torch.save(lstm_model.state_dict(), model_path)
 
 
@@ -211,10 +236,15 @@ def evaluate_lstm(csv_paths, lstm_model, sequence_length=10, error_threshold=0.0
             # time.sleep(1)
 =======
     torch.save(lstm_model.state_dict(), 'saved_models/lstm_model.pth')
+=======
+    torch.save(lstm_model.state_dict(), model_path)
+>>>>>>> a9b0825 (lstm still best results added actual vs prediction prints)
 
 
 def evaluate_lstm(csv_paths, lstm_model, sequence_length=10):
     preprocessor = DataPreprocessor()
+    print(f"Evaluating stock at: {csv_paths}:")
+    time.sleep(5)
     lstm_model.eval()
     with torch.no_grad():
         for csv_path in csv_paths:
@@ -223,6 +253,7 @@ def evaluate_lstm(csv_paths, lstm_model, sequence_length=10):
                 # Load data using DataPreprocessor
                 data = preprocessor.load_csv(csv_path)
                 data = data[['High', 'Low', 'Close', 'Adjusted_Close', 'Volume', 'Open']]  # Select the columns needed
+<<<<<<< HEAD
 <<<<<<< HEAD
                 print(f"Stock name: {preprocessor.stock_name}\n")
                 # Prepare evaluation data
@@ -237,12 +268,22 @@ def evaluate_lstm(csv_paths, lstm_model, sequence_length=10):
                 targets = data[['Open', 'Close']].values
 
 >>>>>>> d3da7a3 (Tried many models, lstm model works best so far, not perfect but close)
+=======
+                print(f"Stock name: {preprocessor.stock_name}\n")
+                time.sleep(2)
+                # Prepare evaluation data
+                features = data[['High', 'Low', 'Close', 'Adjusted_Close', 'Volume']].values
+                targets = data[['Open', 'Close']].values
+                actual_values = data[['Open', 'Close']].values
+                
+>>>>>>> a9b0825 (lstm still best results added actual vs prediction prints)
                 # Normalize features and targets (min-max scaling)
                 feature_max, feature_min = features.max(axis=0), features.min(axis=0)
                 target_max, target_min = targets.max(axis=0), targets.min(axis=0)
                 features = (features - feature_min) / (feature_max - feature_min)
 
                 # Create sequences
+<<<<<<< HEAD
 <<<<<<< HEAD
                 X, Y = [], []
                 for i in range(len(features) - sequence_length):
@@ -321,19 +362,29 @@ def evaluate_lstm(csv_paths, lstm_model, sequence_length=10):
         result_file.close()
 =======
                 X = []
+=======
+                X, Y = [], []
+>>>>>>> a9b0825 (lstm still best results added actual vs prediction prints)
                 for i in range(len(features) - sequence_length):
                     X.append(features[i:i + sequence_length])
+                    # Y.append(targets[i + sequence_length])
+                    Y.append(actual_values[i + sequence_length])
                 
                 X = np.array(X)
                 X = torch.tensor(X, dtype=torch.float32)
+                Y = np.array(Y)
 
                 # Predict
                 predictions = lstm_model(X).detach().numpy()
 
-                # Reverse normalization
+                # Reverse normalization for evaluation
                 predictions = predictions * (target_max - target_min) + target_min
-                print(f"Predictions for {csv_path}:\n{predictions}")
-                
+                # actual_values = Y * (target_max - target_min) + target_min
+
+                # Print predicted vs actual values
+                for i in range(len(predictions)):
+                    print(f"Predicted value: {predictions[i]} <------> Actual value: {actual_values[i]}")
+
             except Exception as e:
                 print(f"Failed to load or process data from {csv_path}: {e}")
                 continue
@@ -344,6 +395,7 @@ if __name__ == '__main__':
     # Paths to CSV files containing stock data
     csv_folder = "../data/raw/sp500/"
     csv_paths = [os.path.join(csv_folder, f) for f in os.listdir(csv_folder) if f.endswith('.csv')]
+<<<<<<< HEAD
 <<<<<<< HEAD
 
     # Random seed to select a subset of stocks:
@@ -394,6 +446,9 @@ if __name__ == '__main__':
     evaluate_lstm(evaluation_paths, lstm_model, sequence_length=sequence_length, error_threshold=0.05)
 =======
     csv_paths = csv_paths[:5]
+=======
+    csv_paths = csv_paths[:1]
+>>>>>>> a9b0825 (lstm still best results added actual vs prediction prints)
     
     # Initialize model, optimizer, and loss function
     input_dim = 5  # Using 'High', 'Low', 'Close', 'Adjusted_Close', 'Volume'
@@ -403,7 +458,7 @@ if __name__ == '__main__':
     optimizer = optim.Adam(lstm_model.parameters(), lr=0.001)
     criterion = nn.MSELoss()
 
-    # Train the LSTM model to predict the next Open and Close prices
+    # Train the LSTM model to predict the next Open and Close prices if not already trained
     train_lstm(csv_paths, lstm_model, optimizer, criterion, num_epochs=50, batch_size=32, sequence_length=10)
 
     # Evaluate the trained model
