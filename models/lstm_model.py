@@ -10,6 +10,7 @@ from collections import deque
 import time
 sys.path.append('../')
 from data.data_loader import DataPreprocessor  # Assuming DataPreprocessor is in data/data_loader.py
+import random
 
 # Define the LSTM model
 class LSTMPricePredictor(nn.Module):
@@ -113,7 +114,6 @@ def train_lstm(csv_paths, lstm_model, optimizer, criterion, num_epochs=50, batch
 def evaluate_lstm(csv_paths, lstm_model, sequence_length=10):
     preprocessor = DataPreprocessor()
     print(f"Evaluating stock at: {csv_paths}:")
-    time.sleep(5)
     lstm_model.eval()
     with torch.no_grad():
         for csv_path in csv_paths:
@@ -122,7 +122,6 @@ def evaluate_lstm(csv_paths, lstm_model, sequence_length=10):
                 data = preprocessor.load_csv(csv_path)
                 data = data[['High', 'Low', 'Close', 'Adjusted_Close', 'Volume', 'Open']]  # Select the columns needed
                 print(f"Stock name: {preprocessor.stock_name}\n")
-                time.sleep(2)
                 # Prepare evaluation data
                 features = data[['High', 'Low', 'Close', 'Adjusted_Close', 'Volume']].values
                 targets = data[['Open', 'Close']].values
@@ -154,7 +153,7 @@ def evaluate_lstm(csv_paths, lstm_model, sequence_length=10):
                 # Print predicted vs actual values
                 for i in range(len(predictions)):
                     print(f"Predicted value: {predictions[i]} <------> Actual value: {actual_values[i]}")
-
+                print()
             except Exception as e:
                 print(f"Failed to load or process data from {csv_path}: {e}")
                 continue
@@ -164,7 +163,8 @@ if __name__ == '__main__':
     # Paths to CSV files containing stock data
     csv_folder = "../data/raw/sp500/"
     csv_paths = [os.path.join(csv_folder, f) for f in os.listdir(csv_folder) if f.endswith('.csv')]
-    csv_paths = csv_paths[:1]
+    random.shuffle(csv_paths)
+    csv_paths = csv_paths[:10] 
     
     # Initialize model, optimizer, and loss function
     input_dim = 5  # Using 'High', 'Low', 'Close', 'Adjusted_Close', 'Volume'
@@ -178,4 +178,4 @@ if __name__ == '__main__':
     train_lstm(csv_paths, lstm_model, optimizer, criterion, num_epochs=50, batch_size=32, sequence_length=10)
 
     # Evaluate the trained model
-    evaluate_lstm(csv_paths, lstm_model, sequence_length=10)
+    evaluate_lstm(csv_paths, lstm_model, sequence_length=100)
