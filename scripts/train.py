@@ -21,7 +21,7 @@ def train(episodes: int = RL_SETTINGS["episodes"], learning_rate: float = RL_SET
 
     # Placeholder for training code
     # Initialize data preprocessor
-    preprocessor = DataPreprocessor()
+    preprocessor = DataPreprocessor(default_csv_name='sp500/A.csv')
     try:
         # Load and preprocess data from the specified CSV path
         processed_data = preprocessor.load_csv(csv_path, required_columns)
