@@ -18,8 +18,9 @@ class MarketEnvironment(gym.Env):
         setup_file_logger(__name__, 'logs/market_environment.log', will_propogate=True)
 
         # Initialize attributes
-        required_columns = {'Open', 'High', 'Low', 'Close', 'Adj_Close', 'Volume'}
+        required_columns = {'Open', 'High', 'Low', 'Close', 'Adjusted_Close', 'Volume'}
         if not required_columns.issubset(data.columns):
+            self.market_env_logging.debug(f"{data.columns}")
             raise ValueError(f"DataFrame must contain the following columns: {required_columns}")
 
         self.data = data.reset_index(drop=True)
@@ -53,7 +54,7 @@ class MarketEnvironment(gym.Env):
 
     def _next_observation(self):
         """Get the next state/observation."""
-        obs = self.data.iloc[self.current_step][['Open', 'High', 'Low', 'Close', 'Adj_Close', 'Volume']].values
+        obs = self.data.iloc[self.current_step][['Open', 'High', 'Low', 'Close', 'Adjusted_Close', 'Volume']].values
         self.current_price = self.data.iloc[self.current_step]['Close']
         return obs
 
