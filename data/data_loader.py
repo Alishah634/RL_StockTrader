@@ -6,6 +6,7 @@ from config.logging_config import logging, setup_logging, setup_file_logger
 
 class DataPreprocessor:
     def __init__(self, default_raw_csv_folder: str = "data/raw/", default_csv_name: str ='yahoo_data.csv'):
+        self.stock_name = default_csv_name[:-4] 
         self.default_raw_csv_folder = default_raw_csv_folder
         self.default_csv_path = os.path.join(self.default_raw_csv_folder, default_csv_name)
         self.default_required_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Adj_Close', 'Volume']
