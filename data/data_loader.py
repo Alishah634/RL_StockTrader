@@ -3,7 +3,6 @@ import os
 import pandas as pd
 
 from config.logging_config import logging, setup_logging, setup_file_logger
-
 class DataPreprocessor:
     def __init__(self, default_raw_csv_folder: str = "data/raw/", default_csv_name: str ='yahoo_data.csv'):
         self.stock_name = default_csv_name[:-4] 
@@ -44,7 +43,7 @@ class DataPreprocessor:
         """
         path = csv_path if csv_path else self.default_csv_path
         required_columns = required_columns if required_columns else self.default_required_columns
-        
+        self.stock_name = path[:-4] 
         try:
             if not os.path.isfile(path):
                 logging.debug("Function assumes the csv file is in data/raw!!!")
@@ -71,13 +70,23 @@ class DataPreprocessor:
 
             # Convert 'Date' column to datetime format if it exists
             if 'Date' in data.columns:
-                data['Date'] = pd.to_datetime(data['Date'])
-            
+                try:
+                    # Attempt to parse dates using multiple formats
+                    data['Date'] = pd.to_datetime(data['Date'], dayfirst=True, errors='coerce')
+                    # Handle rows with non-parsable dates
+                    non_parsed_dates = data['Date'].isna().sum()
+                    if non_parsed_dates > 0:
+                        logging.warning(f"Found {non_parsed_dates} rows with unparsable dates; these rows will be dropped.")
+                    data = data.dropna(subset=['Date'])  # Drop rows with missing 'Date' values
+
+                except Exception as e:
+                    logging.error(f"Error parsing the Date column: {e}")
+                    raise ValueError("Failed to parse dates correctly. Please check the date format in the CSV file.")
+
             # Convert other columns to numeric, if present
             for col in available_columns:
                 if col != 'Date':  # Skip the 'Date' column for numerical conversion
                     data[col] = pd.to_numeric(data[col].astype(str).str.replace(',', ''), errors='coerce')
-
 
             # Log the number of rows before dropping NA
             initial_row_count = data.shape[0]
@@ -85,8 +94,7 @@ class DataPreprocessor:
             data = data.dropna()
             final_row_count = data.shape[0]
             rows_dropped = initial_row_count - final_row_count
-            logging.debug(f" # of rows before dropping NA: {initial_row_count} and after: {initial_row_count - rows_dropped} i.e rows dropped: {rows_dropped}")
-            
+            logging.debug(f"# of rows before dropping NA: {initial_row_count} and after: {final_row_count}, rows dropped: {rows_dropped}")
 
             # Use the property setter to assign the dataset
             self.dataset = data
@@ -96,20 +104,20 @@ class DataPreprocessor:
 
         except Exception as e:
             logging.error(f"Error during CSV loading or preprocessing: {e}")
-            # Re-raise the exception so it can be caught in the caller if needed (propogate the exception through the call stack)
             raise  
+
     def log_csv_head(self):
         """Logs the first few rows of the dataset."""
-        if not self.dataset.empty:
-            logging.debug("\nFirst few rows of the dataset:\n" + str(self.dataset.head()) +"\n")
+        if self.dataset is not None and not self.dataset.empty:
+            logging.debug("\nFirst few rows of the dataset:\n" + str(self.dataset.head()) + "\n")
         else:
             logging.warning("No dataset available. Please load a CSV first.")
         return
 
     def log_dataset_metrics(self):
         """Logs basic metrics and statistics of the dataset."""
-        if not self.dataset.empty:
-            logging.debug(f"\nDataset Metrics:\nNumber of rows and colums: {(self.dataset.shape[0], self.dataset.shape[1])}\nData Types:\n" + str(self.dataset.dtypes)+"\n")
+        if self.dataset is not None and not self.dataset.empty:
+            logging.debug(f"\nDataset Metrics:\nNumber of rows and columns: {(self.dataset.shape[0], self.dataset.shape[1])}\nData Types:\n" + str(self.dataset.dtypes) + "\n")
             logging.debug("\nSummary Statistics:\n" + str(self.dataset.describe()))
         else:
             logging.warning("No dataset available. Please load a CSV first.")

@@ -14,7 +14,7 @@ from typing import List, Tuple  # Format typing
 import argparse   # For Parsing arguments
 from termcolor import cprint  # Formatting prints
 import pickle  # For saving intermediate values to avoid recomputing
-
+sys.path.append('../')
 # Useful DS, ML, RL, CV Libraries, and others
 import cv2
 import csv
@@ -106,7 +106,7 @@ def log_decorator(enabled=True):
     return decorator
 
 # Ensure the log directory exists
-ensure_directory("logs/")
+# ensure_directory("logs/")
 
 log_decorator(enabled=True)
 def setup_logging(log_level=logging.INFO):
