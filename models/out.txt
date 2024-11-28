@@ -1,0 +1,15 @@
+No trained model found. Starting training.
+Epoch [1/50], Loss: 0.0008
+Epoch [2/50], Loss: 0.0010
+Epoch [3/50], Loss: 0.0002
+Epoch [4/50], Loss: 0.0002
+Epoch [5/50], Loss: 0.0001
+Epoch [6/50], Loss: 0.0001
+Epoch [7/50], Loss: 0.0000
+Epoch [8/50], Loss: 0.0000
+Epoch [9/50], Loss: 0.0001
+Epoch [10/50], Loss: 0.0001
+Epoch [11/50], Loss: 0.0001
+Epoch [12/50], Loss: 0.0001
+Epoch [13/50], Loss: 0.0001
+Epoch [14/50], Loss: 0.0001

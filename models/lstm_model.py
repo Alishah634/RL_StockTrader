@@ -38,8 +38,8 @@ class LSTMPricePredictor(nn.Module):
         return out
 
 
-def train_lstm(csv_paths, lstm_model, optimizer, criterion, num_epochs=50, batch_size=32, sequence_length=10):
-    model_path = 'saved_models/lstm_model.pth'
+def train_lstm(csv_paths, lstm_model, optimizer, criterion, num_epochs=50, batch_size=32, sequence_length=10, model_path: str = None):
+    # model_path = 'saved_models/lstm_model.pth'
 
     # Check if model has already been trained
     if os.path.exists(model_path):
@@ -111,12 +111,18 @@ def train_lstm(csv_paths, lstm_model, optimizer, criterion, num_epochs=50, batch
     torch.save(lstm_model.state_dict(), model_path)
 
 
-def evaluate_lstm(csv_paths, lstm_model, sequence_length=10):
+def evaluate_lstm(csv_paths, lstm_model, sequence_length=10, error_threshold=0.05):
     preprocessor = DataPreprocessor()
     print(f"Evaluating stock at: {csv_paths}:")
     lstm_model.eval()
     with torch.no_grad():
+        total_accuracy = 0
+        total_samples = 0
+        dataset_accuracies = {}
+        dataset_accuracies_within_error = {}
         for csv_path in csv_paths:
+            print(f"Loading data from {csv_path}...")
+            # time.sleep(1)
             try:
                 # Load data using DataPreprocessor
                 data = preprocessor.load_csv(csv_path)
@@ -149,33 +155,82 @@ def evaluate_lstm(csv_paths, lstm_model, sequence_length=10):
                 # Reverse normalization for evaluation
                 predictions = predictions * (target_max - target_min) + target_min
                 # actual_values = Y * (target_max - target_min) + target_min
-
                 # Print predicted vs actual values
+                accurate_count = 0
+                within_threshold = []
                 for i in range(len(predictions)):
-                    print(f"Predicted value: {predictions[i]} <------> Actual value: {actual_values[i]}")
-                print()
+                    error = np.abs(predictions[i] - Y[i])
+                    relative_error = error / (np.abs(Y[i]) + 1e-8)  # Avoid division by zero
+                    is_accurate = (relative_error <= error_threshold).all()  # Check if all outputs meet the threshold
+                    within_threshold.append(is_accurate)
+                    accurate_count += 1 if is_accurate else 0
+                    print(f"Predicted: {predictions[i]} | Actual: {Y[i]} | Accurate: {is_accurate}")
+
+                
+                # Calculate accuracy
+                errors = np.abs(predictions - Y)
+                relative_errors = errors / (np.abs(Y) + 1e-8)  # Add epsilon to avoid division by zero
+                accuracies = 1 - relative_errors.mean(axis=1)  # Accuracy per sample
+                mean_accuracy = accuracies.mean() * 100  # Convert to percentage
+
+                # Store accuracy for the dataset
+                dataset_accuracies[csv_path] = mean_accuracy
+                dataset_accuracies_within_error[csv_path] = accurate_count / len(predictions) * 100
+                
+                # Print all dataset accuracies
+                print(f"Dataset {csv_path} Accuracy: {mean_accuracy:.2f}%")
+                
             except Exception as e:
                 print(f"Failed to load or process data from {csv_path}: {e}")
                 continue
+            # time.sleep(5)
+            
+        # Print all dataset accuracies
+        print("Per-Dataset Accuracies:")
+        for path, accuracy in dataset_accuracies.items():
+            print(f"{path}: Accuracy: {accuracy:.2f}%, and Accuracy {dataset_accuracies_within_error[path]:.2f}% within error threshold")
+            
 
+        # Compute overall accuracy across all datasets
+        overall_accuracy = np.mean(list(dataset_accuracies.values())) if dataset_accuracies else 0
+        print(f"\nOverall accuracy across all datasets: {overall_accuracy:.2f}%")
+        
+        overall_accuracy_within_error = np.mean(list(dataset_accuracies_within_error.values())) if dataset_accuracies_within_error else 0
+        print(f"\nOverall accuracy across all datasets within error threshold: {overall_accuracy_within_error:.2f}%")
+        
 
 if __name__ == '__main__':
     # Paths to CSV files containing stock data
     csv_folder = "../data/raw/sp500/"
     csv_paths = [os.path.join(csv_folder, f) for f in os.listdir(csv_folder) if f.endswith('.csv')]
-    random.shuffle(csv_paths)
-    csv_paths = csv_paths[:10] 
     
+    # Random seed to select a subset of stocks:
+    # Seed is for reproducibility:
+    random.seed(42) 
+    random.shuffle(csv_paths)
+    # Trains on first 10 stocks:
+    testing_path = csv_paths[:10] 
+    # Evaluates on next 20 stocks:
+    evaluation_paths = csv_paths[10:30] 
+
     # Initialize model, optimizer, and loss function
     input_dim = 5  # Using 'High', 'Low', 'Close', 'Adjusted_Close', 'Volume'
-    hidden_dim = 128
+    # hidden_dim = 128
+    hidden_dim = 128 # Change this number to change the model used, as it is based off of number of hidden dimensions
     output_dim = 2  # Predict 'Open' and 'Close'
     lstm_model = LSTMPricePredictor(input_dim=input_dim, hidden_dim=hidden_dim, output_dim=output_dim)
     optimizer = optim.Adam(lstm_model.parameters(), lr=0.001)
     criterion = nn.MSELoss()
 
-    # Train the LSTM model to predict the next Open and Close prices if not already trained
-    train_lstm(csv_paths, lstm_model, optimizer, criterion, num_epochs=50, batch_size=32, sequence_length=10)
+    model_path = f'saved_models/lstm_{hidden_dim}_model.pth'
 
-    # Evaluate the trained model
-    evaluate_lstm(csv_paths, lstm_model, sequence_length=100)
+    # Load the model if it exists
+    if os.path.exists(model_path):
+        lstm_model.load_state_dict(torch.load(model_path))
+        print("Loaded the pre-trained model.")
+    else:
+        print("No trained model found. Starting training.")
+        train_lstm(testing_path, lstm_model, optimizer, criterion, num_epochs=50, batch_size=32, sequence_length=10, model_path=model_path)
+
+    # Evaluate the model
+    evaluate_lstm(evaluation_paths, lstm_model, sequence_length=10, error_threshold=0.05)

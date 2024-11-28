@@ -1,0 +1,55 @@
+For LSTM 256 model:
+Dataset ../data/raw/sp500/UNM.csv Accuracy: 81.65%
+Per-Dataset Accuracies:
+../data/raw/sp500/HUM.csv: 13.06%
+../data/raw/sp500/CL.csv: -1938574009.11%
+../data/raw/sp500/BA.csv: -372.79%
+../data/raw/sp500/COO.csv: -6855356986.87%
+../data/raw/sp500/ESS.csv: 76.27%
+../data/raw/sp500/MLM.csv: 66.10%
+../data/raw/sp500/TW.csv: 93.35%
+../data/raw/sp500/AVB.csv: 83.41%
+../data/raw/sp500/GILD.csv: -148.84%
+../data/raw/sp500/FFIV.csv: 57.39%
+../data/raw/sp500/ADI.csv: -5722226946.43%
+../data/raw/sp500/D.csv: -3428258583.49%
+../data/raw/sp500/DIS.csv: -176.08%
+../data/raw/sp500/HRB.csv: -4432387616.51%
+../data/raw/sp500/OXY.csv: 73.30%
+../data/raw/sp500/ROL.csv: -2287794209.06%
+../data/raw/sp500/PG.csv: 8.82%
+../data/raw/sp500/WRK.csv: 93.57%
+../data/raw/sp500/DPZ.csv: 24.63%
+../data/raw/sp500/ZTS.csv: 82.28%
+../data/raw/sp500/GE.csv: 21.74%
+../data/raw/sp500/NLSN.csv: 90.06%
+../data/raw/sp500/IEX.csv: -81916690.02%
+../data/raw/sp500/EMR.csv: 65.38%
+../data/raw/sp500/COTY.csv: 82.26%
+../data/raw/sp500/BSHI.csv: 78.13%
+../data/raw/sp500/PRU.csv: 90.95%
+../data/raw/sp500/MET.csv: 90.29%
+../data/raw/sp500/CHTR.csv: 68.66%
+../data/raw/sp500/HON.csv: 29.36%
+../data/raw/sp500/MPC.csv: 84.92%
+../data/raw/sp500/NI.csv: -3481623945.46%
+../data/raw/sp500/SPG.csv: 80.92%
+../data/raw/sp500/TMO.csv: -33595376346.13%
+../data/raw/sp500/FRC.csv: 81.48%
+../data/raw/sp500/INTU.csv: -74.57%
+../data/raw/sp500/PEP.csv: -39.40%
+../data/raw/sp500/WAT.csv: 45.43%
+../data/raw/sp500/APD.csv: -6594806854.09%
+../data/raw/sp500/BMRA.csv: 9.79%
+../data/raw/sp500/EQR.csv: 89.62%
+../data/raw/sp500/WDC.csv: -9060604105.28%
+../data/raw/sp500/AVY.csv: -14912627167.60%
+../data/raw/sp500/IT.csv: 23.73%
+../data/raw/sp500/RE.csv: 79.07%
+../data/raw/sp500/MGM.csv: -905627719.87%
+../data/raw/sp500/FLS.csv: -6078423746.38%
+../data/raw/sp500/SONC.csv: 64.88%
+../data/raw/sp500/AMZN.csv: -301.93%
+../data/raw/sp500/UNM.csv: 81.65%
+
+Overall accuracy across all datasets: -1987512082.19%
