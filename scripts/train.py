@@ -125,6 +125,13 @@ from config.rl_config import RL_SETTINGS
 # if __name__ == '__main__':
 #     train(episodes= RL_SETTINGS["episodes"], learning_rate= RL_SETTINGS["learning_rate"]) 
 
+# Script for training the RL agent
+
+from config.logging_config import logging, setup_logging, cprint, List, np
+from data.data_loader import DataPreprocessor
+from env.portfolio_class import Portfolio
+from env.market_environment import MarketEnvironment
+from config.rl_config import RL_SETTINGS
 from agents.drqn import DRQN, train_drqn
 from agents.rl_agent import RLAgent  # Assume RL agent is implemented.
 import torch
@@ -132,12 +139,12 @@ import torch.nn as nn
 import torch.optim as optim
 import math
 import numpy as np
-from env.market_environment import MarketEnvironment
-from env.portfolio_class import Portfolio
+import os
 
 def hoeffding_bound(rewards, n, R=1, delta=0.05):
+    """Calculate the Hoeffding bound for exploration-exploitation analysis."""
     mean_reward = np.mean(rewards)
-    epsilon = R * math.sqrt(math.log(1/delta) / (2 * n))
+    epsilon = R * math.sqrt(math.log(1 / delta) / (2 * n))
     lower_bound = mean_reward - epsilon
     upper_bound = mean_reward + epsilon
     return lower_bound, upper_bound
@@ -145,26 +152,36 @@ def hoeffding_bound(rewards, n, R=1, delta=0.05):
 def train(episodes, learning_rate, csv_path, required_columns):
     # Data Preprocessing
     preprocessor = DataPreprocessor()
-    processed_data = preprocessor.load_csv(csv_path, required_columns)
+    try:
+        processed_data = preprocessor.load_csv(csv_path, required_columns)
+        preprocessor.log_csv_head()
+        preprocessor.log_dataset_metrics()
+    except Exception as e:
+        print(f"Failed to load or preprocess CSV data: {e}")
+        return
 
     # Portfolio and Environment Setup
     portfolio = Portfolio('John', initial_balance=1000)
     env = MarketEnvironment(data=processed_data, portfolio=portfolio)
 
-    # Load the trained DRQN model
-    drqn = DRQN(input_dim=7, action_space=3)  # 7 features (state space), 3 actions
+    # Load or Train the DRQN model
+    input_dim = len(required_columns) - 1  # Exclude 'Date' if it's included
+    action_space = 2  # Predicting 'Open' and 'Close' values
+    drqn = DRQN(input_dim=input_dim, action_space=action_space)
+
     try:
         drqn.load_state_dict(torch.load('saved_models/drqn_model.pth'))
         print("DRQN model loaded successfully.")
     except FileNotFoundError:
         print("DRQN model not found. Training a new model...")
-        train_drqn(data, drqn, optim.Adam(drqn.parameters(), lr=0.001), nn.MSELoss())
+        optimizer = optim.Adam(drqn.parameters(), lr=0.001)
+        criterion = nn.MSELoss()
+        train_drqn([csv_path], drqn, optimizer, criterion, episodes=50)  # Train DRQN on the same dataset for prediction.
 
-
-
-    # Initialize Reinforcement Learning Policy
+    # Initialize Reinforcement Learning Policy Agent
     agent = RLAgent(state_size=env.observation_space.shape[0], action_size=env.action_space.n, learning_rate=learning_rate)
 
+    # Training the RL Agent
     for episode in range(episodes):
         state = env.reset()
         hidden_state = drqn.init_hidden(batch_size=1)
@@ -172,30 +189,33 @@ def train(episodes, learning_rate, csv_path, required_columns):
         total_reward = 0
 
         while not done:
+            # Agent selects an action
             action = agent.select_action(state)
 
-            # Predict reward using DRQN
-            state_tensor = torch.tensor(state, dtype=torch.float32).unsqueeze(0).unsqueeze(0)
+            # Predict reward using DRQN model
+            state_tensor = torch.tensor(state, dtype=torch.float32).unsqueeze(0).unsqueeze(0)  # Add batch and sequence dimensions
             predicted_reward, hidden_state = drqn(state_tensor, hidden_state)
-            predicted_reward = predicted_reward.item()
+            predicted_reward = predicted_reward.squeeze().detach().numpy()
 
             # Validate reward with Hoeffding Bound
-            lower_bound, upper_bound = hoeffding_bound([predicted_reward], n=100)
-            if lower_bound <= predicted_reward <= upper_bound:
+            lower_bound, upper_bound = hoeffding_bound([predicted_reward[1]], n=100)  # Assuming 'Close' as the target for reward
+            if lower_bound <= predicted_reward[1] <= upper_bound:
                 next_state, reward, done, _ = env.step(action)
 
-                # Store experience and train RL agent
+                # Store experience and train the RL agent
                 agent.store_experience(state, action, reward, next_state, done)
                 agent.learn()
 
                 state = next_state
                 total_reward += reward
 
-        print(f"Episode {episode} - Total Reward: {total_reward}")
+        print(f"Episode {episode + 1} - Total Reward: {total_reward}")
 
+    # Save the trained RL agent model
     torch.save(agent.state_dict(), 'saved_models/rl_policy.pth')
 
 if __name__ == '__main__':
+<<<<<<< HEAD
 <<<<<<< HEAD
     # Runs for all the models
     train(f"{ROOT}/data/raw/sp500/DLTR.csv", run_all_modes=["PPO"])
@@ -206,3 +226,6 @@ if __name__ == '__main__':
 =======
     train(episodes=50, learning_rate=0.001, csv_path='path/to/your/data', required_columns=['Open', 'High', 'Low', 'Close', 'Adj_Close', 'Volume'])
 >>>>>>> d3da7a3 (Tried many models, lstm model works best so far, not perfect but close)
+=======
+    train(episodes=50, learning_rate=0.001, csv_path='data/raw/yahoo_data.csv', required_columns=['Date', 'Open', 'High', 'Low', 'Close', 'Adj_Close', 'Volume'])
+>>>>>>> 311939e (Implemented DRQN reward estimation and updated related scripts)
