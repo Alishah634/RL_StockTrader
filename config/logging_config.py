@@ -16,14 +16,14 @@ from termcolor import cprint  # Formatting prints
 import pickle  # For saving intermediate values to avoid recomputing
 sys.path.append('../')
 # Useful DS, ML, RL, CV Libraries, and others
-import cv2
+
 import csv
 import random
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn import svm
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, ConfusionMatrixDisplay
-from sklearn.preprocessing import StandardScaler
+# from sklearn import svm
+# from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, ConfusionMatrixDisplay
+# from sklearn.preprocessing import StandardScaler
 
 # Ensure that a directory exists at the specified path
 def ensure_directory(path: str) -> None:

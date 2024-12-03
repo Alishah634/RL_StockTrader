@@ -18,7 +18,7 @@ def setup_environment():
         'High': [105 + i for i in range(10)],
         'Low': [95 + i for i in range(10)],
         'Close': [102 + i for i in range(10)],
-        'Adj_Close': [102 + i for i in range(10)],
+        'Adjusted_Close': [102 + i for i in range(10)],
         'Volume': [1000 + (i * 10) for i in range(10)]
     })
 
@@ -45,7 +45,10 @@ def stock():
 def test_environment_initial_state(setup_environment):
     """Test the initial state of the environment."""
     env = setup_environment
-    initial_state = env.reset()
+    initial_state, some_dict = env.reset()
+    print(initial_state)
+    print(len(initial_state))
+
     assert initial_state is not None, "Initial state should not be None"
     assert len(initial_state) == 6, "Initial state should have 6 features"
 
