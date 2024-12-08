@@ -4,6 +4,7 @@
 # General Imports
 import os, sys
 from config.logging_config import setup_logging, logging, ClearLogsAction, cprint
+
 # File imports:
 from scripts.train import train
 from scripts.evaluate import evaluate
@@ -76,6 +77,9 @@ def parse_arguments():
     return args
 
 def main():
+    # Default Parameters:
+    csv_path = os.path.abspath ("data/raw/sp500/DLTR.csv")
+
     # Parse arguments
     args = parse_arguments()
 
@@ -104,6 +108,7 @@ def main():
         return
     
     if args.load_csv:
+        print("Remember this needs to be the aboslute path to the CSV!!!")
         # Validate that the CSV file name does not contain spaces
         if ' ' in args.load_csv:
             logging.error(f"File name has spaces in it, please remove spaces then load the csv. {args.load_csv}")
@@ -116,11 +121,20 @@ def main():
             logging.debug(f"Ensure file name ends with \'.csv\'. For example: Valid file name: correct_file_name.csv")
             return
         
+        csv_path = args.load_csv
+        csv_path = os.path.abspath(csv_path)
+
+        if not os.path.exists(csv_path):
+            raise FileNotFoundError (f"CSV File not Found at {csv_path}")
+
     if args.task == 'train':
-        train(episodes=args.episodes, learning_rate=args.learning_rate, csv_path=args.load_csv)
-        # train(episodes=args.episodes, learning_rate=args.learning_rate, csv_path=args.load_csv)
+        # train(csv_path, run_all_modes=["PPO", "PPO_LargeAction", "A2C", "DRQN" ])
+
+        train(csv_path, run_all_modes=["A2C"])
     elif args.task == 'evaluate':
-        evaluate(episodes=args.episodes)
+        # evaluate(csv_path, run_all_modes=["PPO", "PPO_LargeAction", "A2C", "DRQN" ])
+        evaluate(csv_path, run_all_modes=["DRQN"])
+
     elif args.task == 'simulate':
         simulate()
     else:

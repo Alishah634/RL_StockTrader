@@ -150,24 +150,30 @@ def DRQN_main(data_path, model_path: str = None, is_train_mode: bool = True ):
 
     # Check if the model path exists:
     model_id =  f"H{hidden_dim}_L{linear_dim}_E{num_episodes}"
-    save_path = "saved_drq_models"
+    # save_path = "Benchmarking/saved_drq_models"
+    save_path = "Benchmarking/saved_models"
 
     if model_path == None:
         # Use pre trained model path:
-        ensure_directory("saved_drq_models")
+        # ensure_directory("Benchmarking/saved_drq_models")
+        ensure_directory("Benchmarking/saved_models")
         model_path = os.path.join(save_path, f"{model_id}_drqn_model.pth")
     else:
-        model_path = os.path.join("saved_drq_models/", model_path)  
+        # model_path = os.path.join("Benchmarking/saved_drq_models/", model_path)  
+        model_path = os.path.join("Benchmarking/saved_models", model_path)  
+    
+    model_path = os.path.abspath(model_path)
 
-    print(model_path)
     if os.path.exists(model_path):
-        print(f"Loading existing model from {model_path}")
+        print(f"\n\nLoading existing model from {model_path}\n\n")
+        exit(0)
         agent.model.load_state_dict(torch.load(model_path))
         agent.model.eval()
+        
     else:
         # TRAINING lOOP:
         print(f"\n\nSTARTING TRAINING!!!\n\n")
-
+        exit(0)
         for episode in tqdm(range(num_episodes)):
             state = env.reset()
             total_reward = 0
@@ -193,6 +199,8 @@ def DRQN_main(data_path, model_path: str = None, is_train_mode: bool = True ):
     ######################################################################################################
     # Evaluation loop for this CSV
     print(f"\n\nSTARTING EVALUATION!!!\n\n")
+    exit(0)
+
     num_eval_episodes = 100
     total_rewards = []
     for episode in tqdm(range(num_eval_episodes), desc="DRQN Evaluation..."):

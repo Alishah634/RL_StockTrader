@@ -86,9 +86,9 @@ def PPO_SmallAction(data_path, model_path: str = None, is_train_mode: bool = Tru
     if model_path == None:
         # Use pre trained model path::
         ensure_directory("trained_models")
-        model_path = "trained_models/dqn_DLTR_changed_trading_model"
+        model_path = "Benchmarking/trained_models/dqn_DLTR_changed_trading_model"
     else:
-        model_path = os.path.join("trained_models/", model_path)
+        model_path = os.path.join("Benchmarking/trained_models/", model_path)
 
     # Train the model if in training mode:
     if is_train_mode and os.path.exists(model_path):

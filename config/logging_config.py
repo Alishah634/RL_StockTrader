@@ -27,6 +27,7 @@ import matplotlib.pyplot as plt
 
 # Ensure that a directory exists at the specified path
 def ensure_directory(path: str) -> None:
+    print (os.path.abspath(path))
     if not isinstance(path, str):
         raise ValueError("The path must be a string.")
     if not os.path.exists(path):
