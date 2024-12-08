@@ -277,7 +277,6 @@ class MarketEnvironment(gym.Env):
         else:
             # Reward: Change in portfolio value
             reward = float(self.portfolio.portfolio_value - brokerage_fee)
-            print(reward)
             # reward = float(self.portfolio.net_profit)
 
         # Move to the next time step
