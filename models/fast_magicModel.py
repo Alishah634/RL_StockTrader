@@ -212,7 +212,6 @@ if __name__ == "__main__":
     ######################################################################################################
     # Initialization of stock results
     stock_results = {}
-    
 
     csv_paths = [
         "../data/raw/sp500/HPE.csv" 

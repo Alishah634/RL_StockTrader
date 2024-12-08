@@ -1,0 +1,8 @@
+Results of STOCK HPE: Model_Net_Profit: 970.496645450592 | Average_Reward: 131173.33628261567 | Market_Return: 103.22561671138362 | Expected_Evaluation: 2032.256167113836
+Results of STOCK PM: Model_Net_Profit: 2983.2328701019287 | Average_Reward: 38568.19532928467 | Market_Return: 307.63587230696385 | Expected_Evaluation: 4076.358723069639
+Results of STOCK PSX: Model_Net_Profit: 3040.8229370117188 | Average_Reward: 42062.34847618103 | Market_Return: 315.21142132452684 | Expected_Evaluation: 4152.114213245268
+Results of STOCK MDLZ: Model_Net_Profit: 4234.657198905945 | Average_Reward: 79226.76140812873 | Market_Return: 447.2873941751705 | Expected_Evaluation: 5472.873941751705
+Results of STOCK WU: Model_Net_Profit: -20.75196361541748 | Average_Reward: 70567.1439530325 | Market_Return: 8.775023378576389 | Expected_Evaluation: 1087.7502337857638
+Results of STOCK MS-PF: Model_Net_Profit: 564.569383621216 | Average_Reward: 62857.60672376633 | Market_Return: 64.12726493959437 | Expected_Evaluation: 1641.2726493959435
+Results of STOCK GS-PJ: Model_Net_Profit: 684.084810256958 | Average_Reward: 66256.42793703079 | Market_Return: 58.441660702250644 | Expected_Evaluation: 1584.4166070225065
+Results of STOCK MET: Model_Net_Profit: 4775.337588310242 | Average_Reward: 90915.84225420952 | Market_Return: 763.9898237598992 | Expected_Evaluation: 8639.89823759899

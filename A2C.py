@@ -117,14 +117,14 @@ def main():
 
     # Train the model
     # total_timesteps = 100000  # You can adjust this value based on your data and needs
-    total_timesteps = 100 #00  # You can adjust this value based on your data and needs
-    print("Training started...")
-    model.learn(total_timesteps=total_timesteps, callback=eval_callback, log_interval=1)
-    print("Training completed.")
+    # total_timesteps = 10 #00  # You can adjust this value based on your data and needs
+    # print("Training started...")
+    # model.learn(total_timesteps=total_timesteps, callback=eval_callback, log_interval=10)
+    # print("Training completed.")
 
     # Save the model
-    model.save("AC2_largeACTION_dqn_DLTR_changed_trading_model")
-    print("Model saved as 'dqn_trading_model'.")
+    # model.save("AC2_largeACTION_dqn_DLTR_changed_trading_model")
+    # print("Model saved as 'dqn_trading_model'.")
 
     model.load("AC2_largeACTION_dqn_DLTR_changed_trading_model")
     print("Model loaded as 'dqn_DLTR_changed_trading_model'.")
