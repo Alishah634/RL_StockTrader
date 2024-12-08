@@ -264,7 +264,8 @@ if __name__ == '__main__':
     training_paths = csv_paths
 
     # Evaluates on next 20 stocks:
-    evaluation_paths = csv_paths
+    # evaluation_paths = csv_paths
+    evaluation_paths = ["../data/raw/sp500/DLTR.csv"]
 
     # Initialize model, optimizer, and loss function
     input_dim = 5  # Using 'High', 'Low', 'Close', 'Adjusted_Close', 'Volume'
@@ -288,7 +289,7 @@ if __name__ == '__main__':
     # Default learning rate lr= 0.001
     optimizer = optim.Adam(lstm_model.parameters(), lr=learning_rate)
     criterion = nn.MSELoss()
-    model_path = f'testing_models/lstm_ALL_{hidden_dim}_{learning_rate}_{sequence_length}_{batch_size}_{num_epochs}model.pth'
+    model_path = f'lstm_models/lstm_ALL_{hidden_dim}_{learning_rate}_{sequence_length}_{batch_size}_{num_epochs}model.pth'
 
     # Load the model if it exists
     if os.path.exists(model_path):

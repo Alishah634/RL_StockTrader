@@ -57,7 +57,6 @@ class MarketEnvironment(gym.Env):
         self.expected_evaluation = (initial_balance) * (1 + self.market_return / 100)
 
 
-        print(self.market_return)
         # self.observation_space = spaces.Box(
         #     low=np.array([self.data["Adjusted_Close"].min(), self.data["Adjusted_Close"].max()]),
         #     high=np.array([self.data["Volume"].min(), self.data["Volume"].max()]),
@@ -109,9 +108,10 @@ class MarketEnvironment(gym.Env):
 
     def _next_observation(self):
         """Get the next state/observation."""
-        obs = self.data.iloc[self.current_step][['Adjusted_Close', 'Volume']].values
-        self.current_price = self.data.iloc[self.current_step]['Adjusted_Close']
+        obs = self.data.iloc[self.current_step][['Open', 'High', 'Low', 'Close', 'Adjusted_Close', 'Volume']].values
+        self.current_price = self.data.iloc[self.current_step]['Close']
         return obs.astype(np.float32)  # Ensure dtype matches the observation_space definition
+
 
     
     #@time_decorator
@@ -123,7 +123,7 @@ class MarketEnvironment(gym.Env):
             - action[0]: Action Type (0 = hold, 1 = buy, 2 = sell)
             - action[1]: Number of Shares to buy or sell
         """
-
+        # Accounts for if the action is not a tuple, making up amodular market env:
         try:
             action_type, shares = action  # Unpack the action
         except:

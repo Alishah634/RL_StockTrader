@@ -13,7 +13,7 @@ import sys
 sys.path.append("../")
 from data.data_loader import DataPreprocessor
 from env.portfolio_class import Portfolio
-from env.maybe_fast_market_enviroment_drqn import MarketEnvironment
+from env.fast_drqn_market_enviroment import MarketEnvironment
 from tqdm import tqdm
 
 # Define Deep Q-Network (DQN) Model
@@ -33,15 +33,15 @@ from tqdm import tqdm
 class DQN(nn.Module):
     def __init__(self, input_dim, output_dim, hidden_size=128,  lstm_layers=1):
         super(DQN, self).__init__()
-        in_features, out_features = 64, 64
+        linear_dim = 64
         # LSTM Layer
         # self.lstm = nn.LSTM(input_dim, hidden_size, num_layers=lstm_layers, batch_first=True)
         self.gru = nn.GRU(input_dim, hidden_size, num_layers=1, batch_first=True)
 
         # Fully Connected Layers
-        self.fc1 = nn.Linear(hidden_size, 64)
-        self.fc2 = nn.Linear(64, 64)
-        self.fc3 = nn.Linear(64, output_dim)
+        self.fc1 = nn.Linear(hidden_size, linear_dim)
+        self.fc2 = nn.Linear(linear_dim, linear_dim)
+        self.fc3 = nn.Linear(linear_dim, output_dim)
 
     def forward(self, x, hidden_state=None):
         # Ensure input x has the correct dimensions
@@ -149,12 +149,13 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Failed to load or preprocess CSV data: {e}")
 
-    processed_data = processed_data.drop(columns=['Date', 'Open', 'Close', 'High', 'Low'], axis=1)
+    # processed_data = processed_data.drop(columns=['Date', 'Open', 'Close', 'High', 'Low'], axis=1)
 
     portfolio = Portfolio("John", 1000)
     env = MarketEnvironment(data=processed_data, portfolio=portfolio, initial_balance=1000)
 
     state_dim = 2
+    state_dim = 6
     action_dim = 2
 
     agent = DQNAgent(state_dim, action_dim, lr=0.001, gamma=0.99, epsilon=1.0, epsilon_decay=0.995, buffer_size=10000)
@@ -207,21 +208,21 @@ if __name__ == "__main__":
         print(f"Model saved to {model_file}")
 
 
-
     #  INITITIALIZATION STEPS for Evaluation:
     ######################################################################################################
     # Initialization of stock results
     stock_results = {}
 
     csv_paths = [
-        "../data/raw/sp500/HPE.csv" 
-        ,"../data/raw/sp500/PM.csv" 
-        ,"../data/raw/sp500/PSX.csv" 
-        ,"../data/raw/sp500/MDLZ.csv" 
-        ,"../data/raw/sp500/WU.csv" 
-        ,"../data/raw/sp500/MS-PF.csv" 
-        ,"../data/raw/sp500/GS-PJ.csv" 
-        ,"../data/raw/sp500/MET.csv"
+        "../data/raw/sp500/APPL.csv" 
+        # "../data/raw/sp500/HPE.csv" 
+        # ,"../data/raw/sp500/PM.csv" 
+        # ,"../data/raw/sp500/PSX.csv" 
+        # ,"../data/raw/sp500/MDLZ.csv" 
+        # ,"../data/raw/sp500/WU.csv" 
+        # ,"../data/raw/sp500/MS-PF.csv"  
+        # ,"../data/raw/sp500/GS-PJ.csv" 
+        # ,"../data/raw/sp500/MET.csv"
     ]
 
     # Get list of CSV paths
@@ -251,7 +252,7 @@ if __name__ == "__main__":
             continue  # Skip this file if preprocessing fails
 
         # Prepare environment
-        processed_data = processed_data.drop(columns=['Date', 'Open', 'Close', 'High', 'Low'], axis=1)
+        # processed_data = processed_data.drop(columns=['Date', 'Open', 'Close', 'High', 'Low'], axis=1)
         portfolio = Portfolio("John", 1000)
         env = MarketEnvironment(data=processed_data, portfolio=portfolio, initial_balance=1000, enable_logger=False)
     ######################################################################################################
