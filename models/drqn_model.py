@@ -140,39 +140,30 @@ def train_drqn(csv_paths, drqn, optimizer, criterion, episodes=50, batch_size=32
         # Training loop for the DRQN model
         for episode in range(episodes):
             state = data.iloc[0][['High', 'Low', 'Close', 'Adjusted_Close', 'Volume']].values  # Initial state
-            hidden_state = drqn.init_hidden(batch_size=1)
+            hidden_state = drqn.init_hidden(batch_size=1)  # Initialize hidden state for the episode
             total_loss = 0
-            
+        
             for t in range(1, len(data)):
                 next_state = data.iloc[t][['High', 'Low', 'Close', 'Adjusted_Close', 'Volume']].values  # Next state
-                actual_values = data.iloc[t][['Open', 'Close']].values  # The actual target values to predict (Open, Close)
+                actual_values = data.iloc[t][['Open', 'Close']].values  # The actual target values
                 done = t == len(data) - 1
-
-                # Store (state, next_state, actual_values) in replay buffer
-                replay_buffer.append((state, next_state, actual_values, done))
+        
+                # DRQN Prediction
+                input_tensor = torch.tensor(state, dtype=torch.float32).unsqueeze(0).unsqueeze(0)  # Shape (1, 1, input_dim)
+                actual_tensor = torch.tensor(actual_values, dtype=torch.float32).unsqueeze(0)  # Shape (1, output_dim)
+                predictions, hidden_state = drqn(input_tensor, hidden_state)  # Pass hidden state through the LSTM
+        
+                # Loss and backpropagation
+                loss = criterion(predictions, actual_tensor)
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                total_loss += loss.item()
+        
+                # Update state
                 state = next_state
-
-                # Start training only if we have enough samples in the replay buffer
-                if len(replay_buffer) >= batch_size:
-                    batch = random.sample(replay_buffer, batch_size)
-                    states, next_states, actual_values_batch, dones = zip(*batch)
-
-                    # Convert lists to Tensors
-                    states = torch.tensor(np.array(states), dtype=torch.float32)
-                    next_states = torch.tensor(np.array(next_states), dtype=torch.float32)
-                    actual_values_batch = torch.tensor(np.array(actual_values_batch), dtype=torch.float32)
-
-                    hidden_state_batch = drqn.init_hidden(batch_size)
-                    predictions, _ = drqn(states.unsqueeze(1), hidden_state_batch)  # Predict next Open and Close prices
-
-                    # Calculate the loss between predicted and actual values
-                    loss = criterion(predictions, actual_values_batch)
-                    optimizer.zero_grad()
-                    loss.backward()
-                    optimizer.step()
-
-                    total_loss += loss.item()
-
+        
+        
             print(f"Episode {episode + 1}/{episodes}, Loss: {total_loss:.4f}")
 
     # Save the trained DRQN model
