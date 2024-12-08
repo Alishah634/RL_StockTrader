@@ -6,7 +6,8 @@ import random
 from collections import deque
 import gym
 
-
+from tqdm import tqdm
+import re
 import os
 import sys
 sys.path.append("../")
@@ -205,45 +206,98 @@ if __name__ == "__main__":
         torch.save(agent.model.state_dict(), model_file)
         print(f"Model saved to {model_file}")
 
+
+
     #  INITITIALIZATION STEPS for Evaluation:
     ######################################################################################################
-    csv_path = "../data/raw/sp500/PM.csv"
-    preprocessor = DataPreprocessor()
-    try:
-        processed_data = preprocessor.load_csv(csv_path)
-        preprocessor.log_csv_head()
-        preprocessor.log_dataset_metrics()
-    except Exception as e:
-        print(f"Failed to load or preprocess CSV data: {e}")
+    # Initialization of stock results
+    stock_results = {}
+    
 
-    processed_data = processed_data.drop(columns=['Date', 'Open', 'Close', 'High', 'Low'], axis=1)
+    csv_paths = [
+        "../data/raw/sp500/HPE.csv" 
+        ,"../data/raw/sp500/PM.csv" 
+        ,"../data/raw/sp500/PSX.csv" 
+        ,"../data/raw/sp500/MDLZ.csv" 
+        ,"../data/raw/sp500/WU.csv" 
+        ,"../data/raw/sp500/MS-PF.csv" 
+        ,"../data/raw/sp500/GS-PJ.csv" 
+        ,"../data/raw/sp500/MET.csv"
+    ]
 
-    portfolio = Portfolio("John", 1000)
-    env = MarketEnvironment(data=processed_data, portfolio=portfolio, initial_balance=1000)
+    # Get list of CSV paths
+    # csv_paths = [os.path.join("../data/raw/sp500/", path) for path in os.listdir("../data/raw/sp500/") if path.endswith('.csv')]
+    # print(csv_paths)
+
+    # Slice to limit the range of paths (if needed)
+    N_paths = [0, 3]
+    # csv_paths = csv_paths[N_paths[0]: N_paths[-1]]
+
+    # Regular expression to extract CSV filename
+    pattern = r"[^/]+\.csv$"
+    # Evaluation loop for each CSV file
+    for csv_path in tqdm(csv_paths, desc=f"Evaluation of Multiple Stocks\n"):
+        print(f"EVALUATING stock {csv_path}")
+        # Initialize a new results dictionary for this stock
+        results = {}
+
+        # Load and preprocess data
+        preprocessor = DataPreprocessor()
+        try:
+            processed_data = preprocessor.load_csv(csv_path)
+            preprocessor.log_csv_head()
+            preprocessor.log_dataset_metrics()
+        except Exception as e:
+            print(f"FAILED TO LOAD OR PREPROCESS CSV DATA: {e}!!!")
+            continue  # Skip this file if preprocessing fails
+
+        # Prepare environment
+        processed_data = processed_data.drop(columns=['Date', 'Open', 'Close', 'High', 'Low'], axis=1)
+        portfolio = Portfolio("John", 1000)
+        env = MarketEnvironment(data=processed_data, portfolio=portfolio, initial_balance=1000, enable_logger=False)
     ######################################################################################################
 
-    # # Evaluation Loop
-    print(f"\n\nSTARTING EVALUATION!!!\n\n")
-    num_eval_episodes = 100
-    total_rewards = []
-    for episode in range(num_eval_episodes):
-        state = env.reset()
-        total_reward = 0
-        done = False
-        while not done:
-            action = agent.act(state)  # Use the trained model to act
-            next_state, reward, done, truncated, _ = env.step(action)
-            if truncated:
-                break
-            state = next_state
-            total_reward += reward
-        total_rewards.append(total_reward)
-        print(  )
-        print(f"Evaluation Episode: {episode + 1}, Total Reward: {portfolio.net_profit}")
-        env.render()
+        # Evaluation loop for this CSV
+        print(f"\n\nSTARTING EVALUATION!!!\n\n")
+        num_eval_episodes = 1000
+        total_rewards = []
+        for episode in range(num_eval_episodes):
+            state = env.reset()
+            total_reward = 0
+            done = False
+            while not done:
+                action = agent.act(state)  # Use the trained model to act
+                next_state, reward, done, truncated, _ = env.step(action)
+                if truncated:
+                    break
+                state = next_state
+                total_reward += reward
+            total_rewards.append(total_reward)
+            print(f"Evaluation Episode: {episode + 1}, Total Reward: {portfolio.net_profit}")
 
-    avg_reward = np.mean(total_rewards)
-    print(f"Average Reward over {num_eval_episodes} episodes: {avg_reward}")
+        # Collect results for this CSV
+        avg_reward = np.mean(total_rewards)
+        results["Model_Net_Profit"] = portfolio.net_profit
+        results["Average_Reward"] = avg_reward
+        results["Market_Return"] = env.market_return
+        results["Expected_Evaluation"] = env.expected_evaluation
 
+        # Extract the CSV filename
+        match = re.search(pattern, csv_path)
+        if match:
+            csv_name = match.group()
+            csv_name = os.path.splitext(csv_name)[0]  # Remove .csv extension
+            print(f"CSV Filename: {csv_name}")
+        else:
+            print("No CSV filename found.!!!")
 
-y
+        # Store results in stock_results using the CSV name
+        stock_results[csv_name] = results
+
+    # Print final results for each stock
+    for stock_name, res in stock_results.items():
+        print(
+            f"Results of STOCK {stock_name}: Model_Net_Profit: {res['Model_Net_Profit']} | "
+            f"Average_Reward: {res['Average_Reward']} | Market_Return: {res['Market_Return']} | "
+            f"Expected_Evaluation: {res['Expected_Evaluation']}"
+        )

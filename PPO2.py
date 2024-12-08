@@ -1,3 +1,7 @@
+"""Large action space -100 to 100 ppo strategy:"""
+import sys
+sys.path.append("env/market_enviroment_2.py")
+
 import pandas as pd
 from stable_baselines3 import PPO
 
@@ -11,7 +15,8 @@ from stable_baselines3.common.callbacks import EvalCallback
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
 from env.portfolio_class import Portfolio
-from env.market_environment import MarketEnvironment
+from env.market_enviroment_2 import MarketEnvironment
+
 
 def preprocess_data(file_path: str) -> pd.DataFrame:
     """
@@ -40,7 +45,7 @@ def main():
     # data_path = "data/raw/sp500/JPM.csv"  # Replace with your actual data file
     data_path = "data/raw/sp500/AAL.csv"  # Replace with your actual data file
     data_path = "data/raw/sp500/MSFT.csv"  # Replace with your actual data file
-    # data_path = "data/raw/sp500/DLTR.csv"  # Replace with your actual data file
+    data_path = "data/raw/sp500/DLTR.csv"  # Replace with your actual data file
     data = preprocess_data(data_path)
     # data = data.head(5*365)
     # data = data.head(3485)
@@ -118,12 +123,13 @@ def main():
 
     # Save the model
     # model.save("dqn_trading_model")
-    # model.save("dqn_DLTR_changed_trading_model")
-    print("Model saved as 'dqn_trading_model'.")
+    # model.save("largeACTION_dqn_DLTR_changed_trading_model")
+    # print("Model saved as 'dqn_trading_model'.")
 
     # model.load("dqn_trading_model")
     # model.load("dqn_DLTR_trading_model")
-    model.load("dqn_DLTR_changed_trading_model")
+    model.load("largeACTION_dqn_DLTR_changed_trading_model")
+    # model.load("dqn_DLTR_changed_trading_model")
     print("Model loaded as 'dqn_DLTR_changed_trading_model'.")
     # Evaluate the trained model
     obs = env.reset()

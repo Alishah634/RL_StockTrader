@@ -97,10 +97,14 @@ def log_decorator(enabled=True):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             if enabled:
-                logging.info(f"Calling function {func.__name__} with arguments {args} and keyword arguments {kwargs}")
+                # logging.info(f"Calling function {func.__name__} with arguments {args} and keyword arguments {kwargs}")
+                print(f"CALLED: Calling function {func.__name__} with arguments {args} and keyword arguments {kwargs}")
             result = func(*args, **kwargs)
             if enabled:
-                logging.info(f"{func.__name__} returned {result}")
+                # logging.info(f"{func.__name__} returned {result}")
+                print(f"Returned:  {func.__name__} returned {result}")
+                print()
+                print()
             return result
         return wrapper
     return decorator
