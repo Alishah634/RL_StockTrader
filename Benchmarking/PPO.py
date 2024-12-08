@@ -120,10 +120,11 @@ def PPO_SmallAction(data_path, model_path: str = None, is_train_mode: bool = Tru
 
 if __name__ == "__main__":
     PPO_SmallAction("../data/raw/sp500/DLTR.csv", is_train_mode=False)
+    
     # # Load and preprocess the data
-    # data_path = "data/raw/sp500/AAPL.csv"  # Replace with your actual data file
-    # # data_path = "data/raw/sp500/JPM.csv"  # Replace with your actual data file
-    # data_path = "data/raw/sp500/AAL.csv"  # Replace with your actual data file
-    # data_path = "data/raw/sp500/MSFT.csv"  # Replace with your actual data file
-    # # data_path = "data/raw/sp500/DLTR.csv"  # Replace with your actual data file
+    # data_path = "data/raw/sp500/AAPL.csv"  
+    # # data_path = "data/raw/sp500/JPM.csv"  
+    # data_path = "data/raw/sp500/AAL.csv"  
+    # data_path = "data/raw/sp500/MSFT.csv"  
+    # # data_path = "data/raw/sp500/DLTR.csv"  
     # data = preprocess_data(data_path)
