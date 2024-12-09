@@ -37,9 +37,6 @@ class MarketEnvironment(gym.Env):
             raise ValueError(f"DataFrame must contain the following columns: {required_columns}")
 
         self.data = data.reset_index(drop=True)
-
-        # print (self.data)
-        # exit(0)
         self.portfolio = portfolio
         self.initial_balance = portfolio.initial_balance
         self.current_step = 0
@@ -257,7 +254,7 @@ class MarketEnvironment(gym.Env):
                 self.portfolio.holdings += shares
                 self.portfolio.total_shares_bought += shares
             else:
-                self.market_env_logging.warning("Insufficient balance to buy shares.")
+                #self.market_env_logging.warning("Insufficient balance to buy shares.")
                 cant_buy = True
         elif action_type == 2:  # Sell
             shares = min(shares, self.portfolio.holdings)  # Limit to holdings
@@ -267,16 +264,15 @@ class MarketEnvironment(gym.Env):
                 self.portfolio.holdings -= shares
                 self.portfolio.total_shares_sold += shares
             else:
-                self.market_env_logging.warning("Insufficient holdings to sell shares.")
+                #self.market_env_logging.warning("Insufficient holdings to sell shares.")
                 cant_sell = True
         else:
-                self.market_env_logging.warning("HOLDING!!!")
+                #self.market_env_logging.warning("HOLDING!!!")
                 is_holding = True
 
         # Calculate portfolio value and net profit
         self.portfolio.portfolio_value = self.portfolio.balance + (self.portfolio.holdings * self.current_price)
         self.portfolio.net_profit = self.portfolio.portfolio_value - self.initial_balance
-        # print(self.portfolio.portfolio_value, self.portfolio.net_profit)
 
         # Brokerage FEE:
         brokerage_fee = 0.5
@@ -285,7 +281,6 @@ class MarketEnvironment(gym.Env):
         else:
             # Reward: Change in portfolio value
             reward = float(self.portfolio.portfolio_value - brokerage_fee)
-            # print(reward)
             # reward = float(self.portfolio.net_profit)
 
         # Move to the next time step
@@ -301,6 +296,7 @@ class MarketEnvironment(gym.Env):
     def render(self, render_mode='human', close=False):
         """Render the environment's current state."""
         if self.render_mode == 'human':
+            return
             print(f"Step: {self.current_step}, Current Price: {self.current_price}, "
                 f"Balance: {self.portfolio.balance}, Holdings: {self.portfolio.holdings} shares, "
                 f"Portfolio Value: {self.portfolio.portfolio_value}, Net Profit: {self.portfolio.net_profit}")

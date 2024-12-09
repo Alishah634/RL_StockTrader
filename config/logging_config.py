@@ -1,33 +1,21 @@
 # Logging and utility setup
 
 # General Imports
-import os
-import sys
-import time
-import math
+import os, sys, time
 import threading
 import logging  # For logging and decorators
 import colorlog  # For coloring the logs
 import functools  # For logging and decorators
-from tqdm import tqdm  # Progress bar
-from typing import List, Tuple  # Format typing
 import argparse   # For Parsing arguments
 from termcolor import cprint  # Formatting prints
-import pickle  # For saving intermediate values to avoid recomputing
-sys.path.append('../')
-# Useful DS, ML, RL, CV Libraries, and others
 
-import csv
-import random
-import numpy as np
-import matplotlib.pyplot as plt
-# from sklearn import svm
-# from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, ConfusionMatrixDisplay
-# from sklearn.preprocessing import StandardScaler
+
+ROOT = os.getenv('PROJECT_ROOT', "/home/shantanu/RL_Proj/RL_StockTrader")
+sys.path.append(ROOT)
+
 
 # Ensure that a directory exists at the specified path
 def ensure_directory(path: str) -> None:
-    print (os.path.abspath(path))
     if not isinstance(path, str):
         raise ValueError("The path must be a string.")
     if not os.path.exists(path):
@@ -103,9 +91,7 @@ def log_decorator(enabled=True):
             result = func(*args, **kwargs)
             if enabled:
                 # logging.info(f"{func.__name__} returned {result}")
-                print(f"Returned:  {func.__name__} returned {result}")
-                print()
-                print()
+                print(f"Returned:  {func.__name__} returned {result}\n\n")
             return result
         return wrapper
     return decorator

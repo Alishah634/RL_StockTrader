@@ -1,7 +1,5 @@
 import os
 import sys
-import re
-import gym
 import torch
 import random
 import torch.nn as nn
@@ -10,7 +8,9 @@ import numpy as np
 from collections import deque
 from tqdm import tqdm
 
-sys.path.append("../")
+ROOT = os.getenv('PROJECT_ROOT', "/home/shantanu/RL_Proj/RL_StockTrader")
+sys.path.append(ROOT)
+
 from config.logging_config import ensure_directory
 from data.data_loader import DataPreprocessor
 from env.portfolio_class import Portfolio
@@ -123,6 +123,9 @@ class DRQNAgent:
             self.epsilon *= self.epsilon_decay
 
 def DRQN_main(data_path, model_path: str = None, is_train_mode: bool = True ):
+    data_path = os.path.join(ROOT, data_path)
+    save_path = os.path.join(ROOT, "Benchmarking/trained_models")
+
     #  INITITIALIZATION STEPS for Training:
     ######################################################################################################
     preprocessor = DataPreprocessor()
@@ -136,7 +139,7 @@ def DRQN_main(data_path, model_path: str = None, is_train_mode: bool = True ):
     portfolio = Portfolio("John", 1000)
     env = MarketEnvironment(data=processed_data, portfolio=portfolio, initial_balance=1000)
 
-    state_dim = 2
+    state_dim = 6
     action_dim = 2
 
     agent = DRQNAgent(state_dim, action_dim, lr=0.001, gamma=0.99, epsilon=1.0, epsilon_decay=0.995, buffer_size=10000)
@@ -150,30 +153,18 @@ def DRQN_main(data_path, model_path: str = None, is_train_mode: bool = True ):
 
     # Check if the model path exists:
     model_id =  f"H{hidden_dim}_L{linear_dim}_E{num_episodes}"
-    # save_path = "Benchmarking/saved_drq_models"
-    save_path = "Benchmarking/saved_models"
-
-    if model_path == None:
-        # Use pre trained model path:
-        # ensure_directory("Benchmarking/saved_drq_models")
-        ensure_directory("Benchmarking/saved_models")
-        model_path = os.path.join(save_path, f"{model_id}_drqn_model.pth")
-    else:
-        # model_path = os.path.join("Benchmarking/saved_drq_models/", model_path)  
-        model_path = os.path.join("Benchmarking/saved_models", model_path)  
-    
+    ensure_directory(save_path)
+    model_path = model_path or os.path.join(save_path, f"drqn_model_{model_id}.pth")
     model_path = os.path.abspath(model_path)
 
     if os.path.exists(model_path):
         print(f"\n\nLoading existing model from {model_path}\n\n")
-        exit(0)
         agent.model.load_state_dict(torch.load(model_path))
         agent.model.eval()
         
     else:
         # TRAINING lOOP:
         print(f"\n\nSTARTING TRAINING!!!\n\n")
-        exit(0)
         for episode in tqdm(range(num_episodes)):
             state = env.reset()
             total_reward = 0
@@ -199,7 +190,6 @@ def DRQN_main(data_path, model_path: str = None, is_train_mode: bool = True ):
     ######################################################################################################
     # Evaluation loop for this CSV
     print(f"\n\nSTARTING EVALUATION!!!\n\n")
-    exit(0)
 
     num_eval_episodes = 100
     total_rewards = []
@@ -218,6 +208,10 @@ def DRQN_main(data_path, model_path: str = None, is_train_mode: bool = True ):
         print(f"Evaluation Episode: {episode + 1}, Total Reward: {portfolio.net_profit}")
 
 if __name__ == "__main__":
-    DRQN_main("../data/raw/sp500/DLTR.csv", is_train_mode=False)
+    DRQN_main(f"{ROOT}/data/raw/sp500/DLTR.csv", is_train_mode=False)
 
-  
+    # "data/raw/sp500/AAPL.csv"  
+    # "data/raw/sp500/JPM.csv"  
+    # "data/raw/sp500/AAL.csv"  
+    # "data/raw/sp500/MSFT.csv"  
+    # "data/raw/sp500/DLTR.csv"  

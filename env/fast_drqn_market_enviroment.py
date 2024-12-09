@@ -1,15 +1,15 @@
 import gymnasium as gym
-# from gym import spaces
 from gymnasium import spaces
+import os, sys
 
+ROOT = os.getenv('PROJECT_ROOT', "/home/shantanu/RL_Proj/RL_StockTrader")
+sys.path.append(ROOT)
 
 import numpy as np
 import pandas as pd
 from env.portfolio_class import Portfolio
 from config.logging_config import setup_file_logger
-from config.logging_config import time_decorator
-from config.logging_config import log_decorator
-import logging  # Standard library logging
+import logging
 import inspect
 
 def print_call_stack(func):
@@ -32,7 +32,7 @@ class MarketEnvironment(gym.Env):
         
         # Create a logger specifically for the market environment
         self.market_env_logging = logging.getLogger(__name__)
-        setup_file_logger(__name__, 'logs/market_environment.log', log_level=logging.INFO, will_propogate=True)
+        setup_file_logger(__name__, f'{ROOT}/logs/fast_market_environment.log', log_level=logging.INFO, will_propogate=True)
 
         # Initialize attributes
         required_columns = {'Adjusted_Close', 'Volume'}

@@ -3,21 +3,18 @@
 import os 
 import sys
 import pandas as pd
-from typing import List
 
 from stable_baselines3 import PPO
-import gymnasium as gym  # Use gymnasium instead of gym
-from gymnasium import spaces 
-from stable_baselines3 import DQN
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.callbacks import EvalCallback
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
 
+ROOT = os.getenv('PROJECT_ROOT', "/home/shantanu/RL_Proj/RL_StockTrader")
+sys.path.append(ROOT)
 
-sys.path.append("../")
 from config.logging_config import ensure_directory
-ensure_directory("logs/")
+ensure_directory(os.path.join(ROOT, "Benchmarking/logs/"))
 from env.portfolio_class import Portfolio
 from env.LargeAction_market_enviroment import MarketEnvironment
 
@@ -44,7 +41,7 @@ def preprocess_data(file_path: str) -> pd.DataFrame:
     return data
 
 def PPO_LargeAction(data_path, model_path: str = None, is_train_mode: bool = True ):
-    # Pre process the data:
+    data_path = os.path.join(ROOT, data_path)
     preprocessed_data = preprocess_data(data_path)
 
     # Initialize the portfolio and environment
@@ -59,6 +56,16 @@ def PPO_LargeAction(data_path, model_path: str = None, is_train_mode: bool = Tru
     env = Monitor(env)
     env = DummyVecEnv([lambda: MarketEnvironment(data=preprocessed_data, portfolio=portfolio, initial_balance=1000, render_mode='human')])
 
+    # Setup evaluation callback
+    eval_callback = EvalCallback(
+        env,
+        best_model_save_path=os.path.join(ROOT, "Benchmarking/logs/PPO_Large/best_model/"),
+        log_path=os.path.join(ROOT, "Benchmarking/logs/PPO_Large/results/"),
+        eval_freq= 500,
+        deterministic=True,
+        render=True,
+    )
+
     model = PPO(
         policy="MlpPolicy",
         env=env,
@@ -70,37 +77,29 @@ def PPO_LargeAction(data_path, model_path: str = None, is_train_mode: bool = Tru
         gae_lambda=0.95,
         clip_range=0.2,
         verbose=1,
-        tensorboard_log="./largeAction_ppo_trading_tensorboard/"
+        tensorboard_log=os.path.join(ROOT, "Benchmarking/TensorBoards/LargeAction_ppo_trading_tensorboard/")
     )
 
-    # Setup evaluation callback
-    eval_callback = EvalCallback(
-        env,
-        best_model_save_path="./logs/best_model/",
-        log_path="./logs/results/",
-        # eval_freq=1000,
-        eval_freq= 500,
-        deterministic=True,
-        render=True,
-    )
 
     if model_path == None:
         # Use pre trained model path::
-        ensure_directory("trained_models")
-        model_path = "Benchmarking/trained_models/largeACTION_PPO_DLTR_changed_trading_model"
+        ensure_directory(os.path.join(ROOT, "Benchmarking/trained_models"))
+        model_path = os.path.join(ROOT, "Benchmarking/trained_models/largeACTION_PPO_DLTR_changed_trading_model")
     else:
-        model_path = os.path.join("Benchmarking/trained_models/", model_path)
+        model_path = os.path.join(ROOT, "Benchmarking/trained_models/", model_path)
+
+    model_path = os.path.abspath(model_path)
 
     # Train the model if in training mode:
-    if is_train_mode and os.path.exists(model_path):
+    if is_train_mode or not os.path.exists(model_path):
         print("Training started...")
         total_timesteps = 10000  # You can adjust this value based on your data and needs
-        model.learn(total_timesteps=total_timesteps, callback=eval_callback, log_interval=0)
-        print("Training completed.")
+        model.learn(total_timesteps=total_timesteps, callback=eval_callback, log_interval=1)
+        print("\n\nTraining completed.\n\n")
 
         # Save the model
         model.save(f"{model_path}")
-        print("Model saved as '{model_path}'.")
+        print(f"Model saved as '{model_path}'.")
 
     model.load(f"{model_path}")
     print("Model loaded as 'model_path'.")
@@ -120,12 +119,10 @@ def PPO_LargeAction(data_path, model_path: str = None, is_train_mode: bool = Tru
 
 if __name__ == "__main__":
     # Set for evaluation of the pretrained model:
-    PPO_LargeAction("../data/raw/sp500/DLTR.csv", is_train_mode=False)
+    PPO_LargeAction(f"{ROOT}/data/raw/sp500/DLTR.csv", is_train_mode=False)
 
-    # # Load and preprocess the data
-    # data_path = "data/raw/sp500/AAPL.csv"  
-    # # data_path = "data/raw/sp500/JPM.csv"  
-    # data_path = "data/raw/sp500/AAL.csv"  
-    # data_path = "data/raw/sp500/MSFT.csv"  
-    # # data_path = "data/raw/sp500/DLTR.csv"  
-    # data = preprocess_data(data_path)
+    # "data/raw/sp500/AAPL.csv"  
+    # "data/raw/sp500/JPM.csv"  
+    # "data/raw/sp500/AAL.csv"  
+    # "data/raw/sp500/MSFT.csv"  
+    # "data/raw/sp500/DLTR.csv"  

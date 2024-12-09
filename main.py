@@ -2,7 +2,11 @@
 
 # Load up the initial configuration file (Debugging and useful imports)
 # General Imports
-import os, sys
+
+
+from verify_root import *
+
+import os
 from config.logging_config import setup_logging, logging, ClearLogsAction, cprint
 
 # File imports:
@@ -86,7 +90,6 @@ def main():
     # Initialize logging with the specified log level
     setup_logging(getattr(logging, args.log_level))
 
-    # Ensure you're in the correct directory
     cprint("Make sure you are running from the RL_STOCK_TRADER directory!!!\n", "red")
 
     # Display chosen configuration
@@ -128,15 +131,14 @@ def main():
             raise FileNotFoundError (f"CSV File not Found at {csv_path}")
 
     if args.task == 'train':
-        # train(csv_path, run_all_modes=["PPO", "PPO_LargeAction", "A2C", "DRQN" ])
+        train(csv_path, run_all_modes=["PPO", "PPO_LargeAction", "A2C", "DRQN" ])
 
-        train(csv_path, run_all_modes=["A2C"])
     elif args.task == 'evaluate':
-        # evaluate(csv_path, run_all_modes=["PPO", "PPO_LargeAction", "A2C", "DRQN" ])
-        evaluate(csv_path, run_all_modes=["DRQN"])
+        evaluate(csv_path, run_all_modes=["PPO", "PPO_LargeAction", "A2C", "DRQN" ])
 
     elif args.task == 'simulate':
         simulate()
+
     else:
         # Possibly redundant check as correct task choices are validated in parse_arguments()!!!
         logging.error("Invalid task choice. Please select 'train', 'evaluate', or 'simulate'.")

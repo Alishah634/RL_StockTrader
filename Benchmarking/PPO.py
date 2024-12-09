@@ -3,23 +3,19 @@ import os
 import sys
 import pandas as pd
 from stable_baselines3 import PPO
-from stable_baselines3 import A2C
-
-import gymnasium as gym  # Use gymnasium instead of gym
-from gymnasium import spaces 
-from stable_baselines3 import DQN
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.callbacks import EvalCallback
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
 
-sys.path.append("../")
+ROOT = os.getenv('PROJECT_ROOT', "/home/shantanu/RL_Proj/RL_StockTrader")
+sys.path.append(ROOT)
 
 from config.logging_config import ensure_directory
 from env.portfolio_class import Portfolio
 from env.market_environment import MarketEnvironment
 
-ensure_directory("logs/")
+ensure_directory(os.path.join(ROOT, "Benchmarking/logs/"))
 
 def preprocess_data(file_path: str) -> pd.DataFrame:
     """
@@ -43,7 +39,7 @@ def preprocess_data(file_path: str) -> pd.DataFrame:
     return data
 
 def PPO_SmallAction(data_path, model_path: str = None, is_train_mode: bool = True ):
-    # Pre process the data:
+    data_path = os.path.join(ROOT, data_path)
     preprocessed_data = preprocess_data(data_path)
 
     # Initialize the portfolio and environment
@@ -69,15 +65,14 @@ def PPO_SmallAction(data_path, model_path: str = None, is_train_mode: bool = Tru
         gae_lambda=0.95,
         clip_range=0.2,
         verbose=1,
-        tensorboard_log="./smallAction_ppo_trading_tensorboard/"
+        tensorboard_log=os.path.join(ROOT, "Benchmarking/TensorBoards/smallAction_ppo_trading_tensorboard/")
     )
 
     # Setup evaluation callback
     eval_callback = EvalCallback(
         env,
-        best_model_save_path="./logs/best_model/",
-        log_path="./logs/results/",
-        # eval_freq=1000,
+        best_model_save_path=os.path.join(ROOT, "Benchmarking/logs/PPO_Small/best_model/"),
+        log_path=os.path.join(ROOT, "Benchmarking/logs/PPO_Small/results/"),
         eval_freq= 500,
         deterministic=True,
         render=True,
@@ -85,13 +80,13 @@ def PPO_SmallAction(data_path, model_path: str = None, is_train_mode: bool = Tru
 
     if model_path == None:
         # Use pre trained model path::
-        ensure_directory("trained_models")
-        model_path = "Benchmarking/trained_models/dqn_DLTR_changed_trading_model"
+        ensure_directory(os.path.join(ROOT, "Benchmarking/trained_models"))
+        model_path = os.path.join(ROOT, "Benchmarking/trained_models/PPO_Small_Model")
     else:
-        model_path = os.path.join("Benchmarking/trained_models/", model_path)
+        model_path = os.path.join(ROOT, "Benchmarking/trained_models/", model_path)
 
     # Train the model if in training mode:
-    if is_train_mode and os.path.exists(model_path):
+    if not os.path.exists(model_path) or is_train_mode:
         # Train the model
         total_timesteps = 10000  # You can adjust this value based on your data and needs
         print("Training started...")
@@ -121,10 +116,8 @@ def PPO_SmallAction(data_path, model_path: str = None, is_train_mode: bool = Tru
 if __name__ == "__main__":
     PPO_SmallAction("../data/raw/sp500/DLTR.csv", is_train_mode=False)
     
-    # # Load and preprocess the data
-    # data_path = "data/raw/sp500/AAPL.csv"  
-    # # data_path = "data/raw/sp500/JPM.csv"  
-    # data_path = "data/raw/sp500/AAL.csv"  
-    # data_path = "data/raw/sp500/MSFT.csv"  
-    # # data_path = "data/raw/sp500/DLTR.csv"  
-    # data = preprocess_data(data_path)
+    # "data/raw/sp500/AAPL.csv"  
+    # "data/raw/sp500/JPM.csv"  
+    # "data/raw/sp500/AAL.csv"  
+    # "data/raw/sp500/MSFT.csv"  
+    # "data/raw/sp500/DLTR.csv"  
