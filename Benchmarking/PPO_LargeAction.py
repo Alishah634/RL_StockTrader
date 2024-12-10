@@ -2,6 +2,7 @@
 
 import os 
 import sys
+import csv
 import pandas as pd
 
 from stable_baselines3 import PPO
@@ -41,6 +42,8 @@ def preprocess_data(file_path: str) -> pd.DataFrame:
     return data
 
 def PPO_LargeAction(data_path, model_path: str = None, is_train_mode: bool = True ):
+    print(data_path)
+    print(is_train_mode)
     data_path = os.path.join(ROOT, data_path)
     preprocessed_data = preprocess_data(data_path)
 
@@ -84,12 +87,12 @@ def PPO_LargeAction(data_path, model_path: str = None, is_train_mode: bool = Tru
     if model_path == None:
         # Use pre trained model path::
         ensure_directory(os.path.join(ROOT, "Benchmarking/trained_models"))
-        model_path = os.path.join(ROOT, "Benchmarking/trained_models/largeACTION_PPO_DLTR_changed_trading_model")
+        model_path = os.path.join(ROOT, "Benchmarking/trained_models/PPO_Large_DLTR_changed_trading_model.zip")
     else:
         model_path = os.path.join(ROOT, "Benchmarking/trained_models/", model_path)
 
     model_path = os.path.abspath(model_path)
-
+    print(model_path)
     # Train the model if in training mode:
     if is_train_mode or not os.path.exists(model_path):
         print("Training started...")
@@ -104,14 +107,35 @@ def PPO_LargeAction(data_path, model_path: str = None, is_train_mode: bool = Tru
     model.load(f"{model_path}")
     print("Model loaded as 'model_path'.")
 
+
     # Evaluate the trained model
     obs = env.reset()
     done = False
+
+    # Store timestep vs portfolio value
+    timestep = 0
+    portfolio_values = list()
     print("Evaluating the model...")
     while not done:
+        # action, _states = model.predict(obs, deterministic=True)
         action, _states = model.predict(obs, deterministic=True)
         obs, reward, done, info = env.step(action)
         env.render(mode='human')
+        
+        # Append the portfolio value and timestep to the list
+        portfolio_value = portfolio.portfolio_value  # Access the portfolio value from the environment
+        portfolio_values.append((timestep, portfolio_value))
+        timestep += 1
+
+    # Save portfolio values to CSV
+    csv_path = os.path.join(ROOT, "Benchmarking/logs/PPO_Large/portfolio_values.csv")
+    with open(csv_path, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["Timestep", "Portfolio Value"])  # Write the header
+        writer.writerows(portfolio_values)  # Write the data
+
+    print(f"Portfolio values saved to {csv_path}")
+
     print("Evaluation completed.")
 
     return
@@ -119,7 +143,7 @@ def PPO_LargeAction(data_path, model_path: str = None, is_train_mode: bool = Tru
 
 if __name__ == "__main__":
     # Set for evaluation of the pretrained model:
-    PPO_LargeAction(f"{ROOT}/data/raw/sp500/DLTR.csv", is_train_mode=False)
+    PPO_LargeAction(f"{ROOT}/data/raw/sp500/JPM.csv", is_train_mode=False)
 
     # "data/raw/sp500/AAPL.csv"  
     # "data/raw/sp500/JPM.csv"  

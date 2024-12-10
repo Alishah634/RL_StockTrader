@@ -67,6 +67,11 @@ def parse_arguments():
         help="Specify the CSV file for evaluation or training. The file name should not contain spaces."
     )
 
+    parser.add_argument(
+        '-model', type=str, default='', 
+        help="Specify the model for evaluation or training. The file name should not contain spaces."
+    )
+
     setup_logging()
     
     # Parse arguments
@@ -130,11 +135,26 @@ def main():
         if not os.path.exists(csv_path):
             raise FileNotFoundError (f"CSV File not Found at {csv_path}")
 
+    if args.model:
+        model = args.model
+    else:
+        # Initialize model to None
+        model = None  
+
+
+
     if args.task == 'train':
-        train(csv_path, run_all_modes=["PPO", "PPO_LargeAction", "A2C", "DRQN" ])
+        if not model:
+            train(csv_path, run_all_modes=["PPO", "PPO_LargeAction", "A2C", "DRQN" ])
+        
+        else:
+            train(csv_path, run_all_modes=[model])
 
     elif args.task == 'evaluate':
-        evaluate(csv_path, run_all_modes=["PPO", "PPO_LargeAction", "A2C", "DRQN" ])
+        if not model:
+            evaluate(csv_path, run_all_modes=["PPO", "PPO_LargeAction", "A2C", "DRQN" ])
+        else:
+            evaluate(csv_path, run_all_modes=[model])
 
     elif args.task == 'simulate':
         simulate()

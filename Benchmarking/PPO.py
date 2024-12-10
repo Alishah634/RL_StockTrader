@@ -1,6 +1,7 @@
 
 import os
 import sys
+import csv
 import pandas as pd
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_checker import check_env
@@ -74,14 +75,14 @@ def PPO_SmallAction(data_path, model_path: str = None, is_train_mode: bool = Tru
         best_model_save_path=os.path.join(ROOT, "Benchmarking/logs/PPO_Small/best_model/"),
         log_path=os.path.join(ROOT, "Benchmarking/logs/PPO_Small/results/"),
         eval_freq= 500,
-        deterministic=True,
+        deterministic=False,
         render=True,
     )
 
     if model_path == None:
         # Use pre trained model path::
         ensure_directory(os.path.join(ROOT, "Benchmarking/trained_models"))
-        model_path = os.path.join(ROOT, "Benchmarking/trained_models/PPO_Small_Model")
+        model_path = os.path.join(ROOT, "Benchmarking/trained_models/PPO_Small_Model.zip")
     else:
         model_path = os.path.join(ROOT, "Benchmarking/trained_models/", model_path)
 
@@ -103,18 +104,40 @@ def PPO_SmallAction(data_path, model_path: str = None, is_train_mode: bool = Tru
     # Evaluate the trained model
     obs = env.reset()
     done = False
+
+    # Store timestep vs portfolio value
+    timestep = 0
+    portfolio_values = list()
+
     print("Evaluating the model...")
     while not done:
         action, _states = model.predict(obs, deterministic=True)
         obs, reward, done, info = env.step(action)
         env.render(mode='human')
+
+        # Append the portfolio value and timestep to the list
+        portfolio_value = portfolio.portfolio_value  # Access the portfolio value from the environment
+        portfolio_values.append((timestep, portfolio_value))
+        timestep += 1
+
+    print("Evaluation completed.")
+
+    # Save portfolio values to CSV
+    csv_path = os.path.join(ROOT, "Benchmarking/logs/PPO_Small/portfolio_values.csv")
+    with open(csv_path, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["Timestep", "Portfolio Value"])  # Write the header
+        writer.writerows(portfolio_values)  # Write the data
+
+    print(f"Portfolio values saved to {csv_path}")
+
     print("Evaluation completed.")
 
     return
 
 
 if __name__ == "__main__":
-    PPO_SmallAction("../data/raw/sp500/DLTR.csv", is_train_mode=False)
+    PPO_SmallAction(f"{ROOT}/data/raw/sp500/JPM.csv", is_train_mode=False)
     
     # "data/raw/sp500/AAPL.csv"  
     # "data/raw/sp500/JPM.csv"  

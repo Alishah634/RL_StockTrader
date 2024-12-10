@@ -2,6 +2,7 @@
 
 import os
 import sys
+import csv
 import pandas as pd
 from stable_baselines3 import A2C
 from stable_baselines3.common.env_checker import check_env
@@ -81,13 +82,13 @@ def A2C_LargeAction(data_path, model_path: str = None, is_train_mode: bool = Tru
     if model_path == None:
         # Use pre trained model path:
         ensure_directory((os.path.join(ROOT, "Benchmarking/trained_models")))
-        model_path = os.path.join(ROOT, "Benchmarking/trained_models/AC2_largeACTION_dqn_DLTR_changed_trading_model")
+        model_path = os.path.join(ROOT, "Benchmarking/trained_models/AC2_largeACTION_dqn_DLTR_changed_trading_model.zip")
     else:
         model_path = os.path.join(ROOT, "Benchmarking/trained_models/", model_path)
 
 
     # Train the model if in training mode:
-    if not os.path.exists(f"{model_path}.zip") or is_train_mode:
+    if not os.path.exists(f"{model_path}") or is_train_mode:
         # Train the model
         total_timesteps = 10 
         print("Training started...")
@@ -100,7 +101,11 @@ def A2C_LargeAction(data_path, model_path: str = None, is_train_mode: bool = Tru
 
 
     model.load(f"{model_path}")
-    print("Model loaded as 'model_path'.")
+    print(f"Model loaded as {model_path}")
+
+    # Store timestep vs portfolio value
+    portfolio_values = []
+    timestep = 0
 
     # Evaluate the trained model
     obs = env.reset()
@@ -110,13 +115,30 @@ def A2C_LargeAction(data_path, model_path: str = None, is_train_mode: bool = Tru
         action, _states = model.predict(obs, deterministic=True)
         obs, reward, done, info = env.step(action)
         env.render(mode='human')
+
+        # Append the portfolio value and timestep to the list
+        portfolio_value = portfolio.portfolio_value  # Access the portfolio value from the environment
+        portfolio_values.append((timestep, portfolio_value))
+        timestep += 1
+
+    print("Evaluation completed.")
+
+    # Save portfolio values to CSV
+    csv_path = os.path.join(ROOT, "Benchmarking/logs/A2C/portfolio_values.csv")
+    with open(csv_path, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["Timestep", "Portfolio Value"])  # Write the header
+        writer.writerows(portfolio_values)  # Write the data
+
+    print(f"Portfolio values saved to {csv_path}")
+
     print("Evaluation completed.")
 
 
     return
 
 if __name__ == "__main__":
-    A2C_LargeAction(f"{ROOT}/data/raw/sp500/DLTR.csv", is_train_mode=False)
+    A2C_LargeAction(f"{ROOT}/data/raw/sp500/JPM.csv", is_train_mode=False)
 
     # "data/raw/sp500/AAPL.csv"  
     # "data/raw/sp500/JPM.csv"  
