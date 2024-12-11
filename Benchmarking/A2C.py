@@ -55,8 +55,8 @@ def A2C_LargeAction(data_path, model_path: str = None, is_train_mode: bool = Tru
     check_env(env)
 
     # Wrap the environment for monitoring and vectorization
-    env = Monitor(env)
-    env = DummyVecEnv([lambda: MarketEnvironment(data=data, portfolio=portfolio, initial_balance=1000, render_mode='human')])
+    # env = Monitor(env)
+    # env = DummyVecEnv([lambda: MarketEnvironment(data=data, portfolio=portfolio, initial_balance=1000, render_mode='human')])
 
     model = A2C(
         policy="MlpPolicy",

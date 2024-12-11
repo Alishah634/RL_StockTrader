@@ -111,7 +111,7 @@ def PPO_SmallAction(data_path, model_path: str = None, is_train_mode: bool = Tru
 
     print("Evaluating the model...")
     while not done:
-        action, _states = model.predict(obs, deterministic=True)
+        action, _states = model.predict(obs, deterministic=False)
         obs, reward, done, info = env.step(action)
         env.render(mode='human')
 

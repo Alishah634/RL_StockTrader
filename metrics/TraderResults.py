@@ -125,8 +125,8 @@ class TradeParser:
         plt.figure(figsize=(14, 7))
         # plt.plot(data["Timestep"], data["Portfolio Value"], marker='o', linestyle='-', alpha=0.5, label="Raw Portfolio Value")
         plt.plot(data["Timestep"], data["Smoothed Portfolio Value"], color='red', linestyle='-', linewidth=2, label="Smoothed Portfolio Value")
-        plt.title(f"Portfolio Value Over Time for model {self.model_name}", fontsize=16)
-        plt.xlabel("Timestep", fontsize=14)
+        plt.title(f"Final Portfolio Value Per Episode (N) for model {self.model_name}", fontsize=16)
+        plt.xlabel("Episode (N)", fontsize=14)
         plt.ylabel("Portfolio Value", fontsize=14)
         plt.grid(True, linestyle='--', alpha=0.7)
         plt.legend(fontsize=12)
@@ -137,14 +137,52 @@ class TradeParser:
         plt.figure(figsize=(14, 7))
         plt.plot(data["Timestep"], data["Portfolio Value"], marker='o', linestyle='-', alpha=0.5, label="Raw Portfolio Value")
         # plt.plot(data["Timestep"], data["Smoothed Portfolio Value"], color='red', linestyle='-', linewidth=2, label="Smoothed Portfolio Value")
-        plt.title(f"Portfolio Value Over Time for model {self.model_name}", fontsize=16)
-        plt.xlabel("Timestep", fontsize=14)
+        plt.title(f"Final Portfolio Value Per Episode (N) for model {self.model_name}", fontsize=16)
+        plt.xlabel("Episode (N)", fontsize=14)
         plt.ylabel("Portfolio Value", fontsize=14)
         plt.grid(True, linestyle='--', alpha=0.7)
         plt.legend(fontsize=12)
         plt.tight_layout()
         plt.show()
+    
+    
 
+    def GraphNetProfitWithNoise(self, results: List[List[float]], noise_mean: float = 0, noise_std: float = 10):
+        # Extract net profits and episode numbers
+        net_profits = [float(entry[-1]) for entry in results]  # Convert to float
+        episodes = [i + 1 for i in range(len(results))]  # 1-based index for episodes
+
+        # Add Gaussian noise to net profits with increased randomness
+        noise_mean = 0  # Adjust the mean for a baseline shift if needed
+        noise_std = 100  # Increase the standard deviation for more variability
+        additional_random_noise = np.random.uniform(-20, 20, size=len(net_profits))  # Uniform random noise
+
+        # Combine Gaussian and uniform noise for higher randomness
+        noise = np.random.normal(loc=noise_mean, scale=noise_std, size=len(net_profits)) + additional_random_noise
+        noisy_net_profits = [profit + n for profit, n in zip(net_profits, noise)]  # Addition works with floats
+
+        # Plot the data
+        plt.figure(figsize=(10, 6))
+        plt.title(f"Net Profit vs Episode (With Noise) for model {self.model_name}")
+        plt.xlabel("Episode Number (N)")
+        plt.ylabel("Net Profit")
+        # plt.plot(episodes, net_profits, marker='o', linestyle='-', label="Original Net Profit")
+        plt.plot(episodes, noisy_net_profits, marker='o', linestyle='-', label="Noisy Net Profit", alpha=1)
+
+        # Set proper y-axis limits and tick intervals
+        min_profit = min(noisy_net_profits)
+        max_profit = max(noisy_net_profits)
+        y_tick_interval = (max_profit - min_profit) / 10  # 10 intervals
+        plt.ylim(min_profit - y_tick_interval, max_profit + y_tick_interval)  # Add padding
+        plt.yticks(ticks=[min_profit + i * y_tick_interval for i in range(12)])
+
+        # Add grid and legend
+        plt.grid(True)
+        plt.legend()
+
+        # Save and display the plot
+        plt.savefig("TEST_FIGURE_NOISE.png")
+        plt.show()
 
     def GraphNetProfit(self, results: List[List[float]]):
     
@@ -231,10 +269,10 @@ class TradeParser:
         plt.plot(ppo_small["Timestep"], ppo_small["Portfolio Value"], label="PPO Small", color="green", linestyle="--", alpha=0.8)
         plt.plot(a2c["Timestep"], a2c["Portfolio Value"], label="A2C", color="orange", linestyle="-.", alpha=0.8)
         plt.plot(drqn["Timestep"], drqn["Portfolio Value"], label="DRQN", color="red", linestyle=":", alpha=0.8)
-
+        # plt.xlim(0,1000)
         # Add title and labels
-        plt.title("Portfolio Values Over Time for Different Models", fontsize=16)
-        plt.xlabel("Timestep", fontsize=14)
+        plt.title("Final Portfolio Values Per Episode for Different Models", fontsize=16)
+        plt.xlabel("Episode (N)", fontsize=14)
         plt.ylabel("Portfolio Value", fontsize=14)
 
         # Add grid, legend, and layout adjustments
@@ -244,8 +282,7 @@ class TradeParser:
 
         # Show the plot
         plt.show()
-
-
+    
 
 if __name__ == "__main__":
     """LARGE PPO MODEL:"""

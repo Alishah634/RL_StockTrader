@@ -213,6 +213,7 @@ class DRQNAgent:
             self.epsilon *= self.epsilon_decay
 
 def DRQN_main(data_path, model_path: str = None, is_train_mode: bool = True ):
+    
     data_path = os.path.join(ROOT, data_path)
     save_path = os.path.join(ROOT, "Benchmarking/trained_models")
 
@@ -260,9 +261,12 @@ def DRQN_main(data_path, model_path: str = None, is_train_mode: bool = True ):
     evaluation_profits_losses = []       # Tracks profit or loss (final value - initial balance) for each evaluation episode.
 
 
+
+
     
 
     if os.path.exists(model_path) or is_train_mode:
+
         print(f"\n\nLoading existing model from {model_path}\n\n")
         agent.model.load_state_dict(torch.load(model_path))
         agent.model.eval()
@@ -270,7 +274,6 @@ def DRQN_main(data_path, model_path: str = None, is_train_mode: bool = True ):
     else:
         # TRAINING lOOP:
         print(f"\n\nSTARTING TRAINING!!!\n\n")
-        exit(0)
         for episode in tqdm(range(num_episodes)):
             state = env.reset()
             total_reward = 0
@@ -317,12 +320,16 @@ def DRQN_main(data_path, model_path: str = None, is_train_mode: bool = True ):
 
 
 
+
+    
+
+
     #  INITITIALIZATION STEPS for Evaluation:
     ######################################################################################################
     # Evaluation loop for this CSV
     print(f"\n\nSTARTING EVALUATION!!!\n\n")
 
-    num_eval_episodes = 100
+    num_eval_episodes = 10000
     # Store timestep vs portfolio value
     timestep = 0
     portfolio_values = list()

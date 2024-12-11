@@ -77,7 +77,9 @@ class MarketEnvironment(gym.Env):
         self.market_env_logging.info(f"Initialized Market Environment with Portfolio Balance: {self.portfolio.balance} and Initial Balance: {self.initial_balance}")
 
         max_shares = 100  # Define a reasonable maximum for the number of shares
-        self.action_space = spaces.MultiDiscrete([3, max_shares + 1])  # Action type and number of shares
+        # self.action_space = spaces.MultiDiscrete([3, max_shares + 1])  # Action type and number of shares
+        self.action_space = spaces.Discrete(200, start=-100) # Ranging the actions from -100 to 100, where negative is sell 100 
+        
 
         # Define observation space (Adj_Close, Volume)
         self.observation_space = spaces.Box(
@@ -124,11 +126,23 @@ class MarketEnvironment(gym.Env):
             - action[1]: Number of Shares to buy or sell
         """
         # Accounts for if the action is not a tuple, making up amodular market env:
-        try:
-            action_type, shares = action  # Unpack the action
-        except:
-            action_type = action
-            shares = 1
+        print(action)
+        action_type = action  # Unpack the action
+        shares = abs(action_type)
+        
+        if action_type < 0:
+            action_type = 2
+        elif action_type > 0:
+            action_type = 1
+        else:
+            action_type = 0
+
+        # try:
+        #     action_type, shares = action  # Unpack the action
+        # except:
+        #     action_type = action
+        #     shares = 1
+            # print(f"THE ACTION {action} and !@@")
 
         cant_buy = False
         cant_sell = False
